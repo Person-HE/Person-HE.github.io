@@ -1,5 +1,5 @@
 /* =========================================
-   Hexo Butterfly - 终极手绘风 (暴力覆盖版)
+   Hexo Butterfly - 最终修复版 (卡片复活 + 链接修复)
    ========================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Patrick+Hand&display=swap');
@@ -13,64 +13,61 @@
   --border-color: #4E3B31;
 }
 
-/* 1. 全局背景：只有纸张纹理，绝无灰色大图 */
+/* 1. 全局背景 */
 body {
   background-color: var(--bg-paper) !important;
   background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(to bottom right, #fdfbf7, #f2ebd9);
   background-blend-mode: multiply;
-  font-family: 'Patrick Hand', 'Microsoft YaHei', sans-serif !important;
+  font-family: 'Patrick Hand', sans-serif !important;
   color: var(--ink-brown);
   margin: 0;
-  padding: 0;
 }
 
-/* 字体统一 */
-h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title, a {
+h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
   font-family: 'ZCOOL KuaiLe', cursive !important;
   color: var(--ink-dark);
-  font-weight: bold;
   text-decoration: none;
 }
 
 /* =========================================
-   【核心操作 1】彻底抹除巨大灰色容器
+   【关键修复】处理巨大的灰色背景
    ========================================= */
+/* 只去掉背景图，保留容器结构，防止子元素消失 */
 #page-header {
-  display: none !important; /* 直接让整个默认头部消失！ */
-  height: 0 !important;
-  min-height: 0 !important;
-  background: none !important;
+  background-image: none !important;
+  background-color: transparent !important;
+  height: auto !important;
+  min-height: auto !important;
+  position: relative;
+  z-index: 1;
 }
 
-/* 防止因为 header 消失导致内容塌陷 */
-#home_top {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
+/* 隐藏原本可能存在的巨大占位符 */
+#page-header.not-top-img {
+  height: auto !important;
+  margin-bottom: 0 !important;
 }
 
 /* =========================================
-   【核心操作 2】手动重建导航栏 (独立存在)
+   【关键修复】重建导航栏 (独立悬浮)
    ========================================= */
-/* 既然 #page-header 死了，我们把 #nav 提出来独立固定 */
 #nav {
   position: fixed !important;
   top: 0;
   left: 0;
   width: 100%;
   height: 70px;
-  background: rgba(248, 244, 236, 0.98) !important; /* 独立米色背景 */
+  background: rgba(248, 244, 236, 0.98) !important;
   border-bottom: 3px solid var(--border-color) !important;
   box-shadow: 0 4px 0 rgba(78, 59, 49, 0.1);
-  z-index: 9999 !important; /* 最高层级 */
+  z-index: 9999 !important;
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   padding: 0 5% !important;
   box-sizing: border-box;
-  animation: slideDown 0.5s ease-out;
 }
 
-/* 修复导航文字颜色 */
 #site-name, #blog_name a {
   color: var(--primary) !important;
   font-size: 1.8rem !important;
@@ -80,9 +77,9 @@ h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title, a {
 #menu-item a {
   color: var(--ink-brown) !important;
   font-size: 1.2rem !important;
-  margin: 0 15px;
-  padding: 6px 12px;
-  border-radius: 10px;
+  margin: 0 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
   transition: all 0.2s;
   font-family: 'Patrick Hand', sans-serif !important;
 }
@@ -90,82 +87,28 @@ h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title, a {
 #menu-item a:hover {
   background: var(--accent) !important;
   color: #fff !important;
-  transform: rotate(-3deg) scale(1.1);
+  transform: rotate(-2deg);
 }
 
 /* =========================================
-   【核心操作 3】手动重建简介卡片 (悬浮显示)
+   【关键修复】复活简介卡片 (强制位移)
    ========================================= */
-/* 让 #site-info 脱离父级限制，独立悬浮 */
+/* 将 #site-info 从原来的流中脱离，强制定位到导航栏下方 */
 #site-info {
-  position: relative !important;
-  top: 0 !important;
-  transform: none !important;
-  margin: 130px auto 40px !important; /* 上边距 130px 避开导航栏 */
+  position: absolute !important; /* 改为绝对定位 */
+  top: 90px !important; /* 距离顶部 90px (导航栏 70px + 间距 20px) */
+  left: 50% !important;
+  transform: translateX(-50%) !important; /* 水平居中 */
   width: 90% !important;
   max-width: 800px !important;
-  background: #fffdf5 !important; /* 独立白色背景 */
+  margin: 0 !important; /* 清除默认边距 */
+  
+  /* 手绘风格样式 */
+  background: #fffdf5 !important;
   border: 3px solid var(--border-color) !important;
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; /* 不规则圆角 */
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
   padding: 40px 30px !important;
-  box-shadow: 8px 8px 0px var(--ink-brown) !important; /* 硬阴影 */
+  box-shadow: 8px 8px 0px var(--ink-brown) !important;
   text-align: center;
   z-index: 100 !important;
-  display: block !important;
-  opacity: 1 !important;
-  animation: wobble 3s infinite ease-in-out;
-}
-
-/* 确保简介文字可见 */
-#site-subtitle {
-  display: block !important;
-  color: var(--ink-brown) !important;
-  font-size: 1.5rem !important;
-  line-height: 1.8;
-  white-space: pre-line;
-  font-family: 'Patrick Hand', sans-serif !important;
-  text-align: left;
-  text-indent: 10px;
-}
-
-#scroll-down, .scroll-down-effects, .full_bg, .apple-line {
-  display: none !important;
-}
-
-/* =========================================
-   其他组件手绘化
-   ========================================= */
-#recent-posts > .recent-post-item,
-.aside-content .card-widget {
-  background: #fffdf5 !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
-  box-shadow: 5px 5px 0px var(--ink-brown) !important;
-  transition: all 0.3s;
-}
-
-#recent-posts > .recent-post-item:hover,
-.aside-content .card-widget:hover {
-  transform: translate(-3px, -3px) rotate(-1deg);
-  box-shadow: 10px 10px 0px var(--accent) !important;
-}
-
-.btn, .button-click, .pagination .page-number.current {
-  background: var(--accent) !important;
-  color: #fff !important;
-  border: 2px solid var(--border-color) !important;
-  border-radius: 15px 225px 15px 255px !important;
-  box-shadow: 3px 3px 0px var(--border-color);
-  font-family: 'ZCOOL KuaiLe', cursive !important;
-}
-
-/* 动画定义 */
-@keyframes slideDown {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes wobble {
-  0%, 100% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
-}
+  display: block !impo
