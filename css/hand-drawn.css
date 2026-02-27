@@ -1,5 +1,5 @@
 /* =========================================
-   Hexo Butterfly - 最终修复版 (卡片复活 + 链接修复)
+   Hexo Butterfly -  (手绘风 + 悬浮卡片)
    ========================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Patrick+Hand&display=swap');
@@ -13,7 +13,7 @@
   --border-color: #4E3B31;
 }
 
-/* 1. 全局背景 */
+/* 1. 全局背景：只有纸张纹理 */
 body {
   background-color: var(--bg-paper) !important;
   background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(to bottom right, #fdfbf7, #f2ebd9);
@@ -30,26 +30,26 @@ h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
 }
 
 /* =========================================
-   【关键修复】处理巨大的灰色背景
+   2. 处理头部背景 (去灰留骨)
    ========================================= */
-/* 只去掉背景图，保留容器结构，防止子元素消失 */
 #page-header {
+  /* 关键：背景透明，但保留容器高度和结构，防止子元素消失 */
+  background: transparent !important; 
   background-image: none !important;
-  background-color: transparent !important;
   height: auto !important;
   min-height: auto !important;
   position: relative;
   z-index: 1;
 }
 
-/* 隐藏原本可能存在的巨大占位符 */
+/* 确保没有顶部大图时的占位符不会造成巨大空白 */
 #page-header.not-top-img {
   height: auto !important;
   margin-bottom: 0 !important;
 }
 
 /* =========================================
-   【关键修复】重建导航栏 (独立悬浮)
+   3. 手绘导航栏 (独立背景 + 边框)
    ========================================= */
 #nav {
   position: fixed !important;
@@ -57,7 +57,8 @@ h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
   left: 0;
   width: 100%;
   height: 70px;
-  background: rgba(248, 244, 236, 0.98) !important;
+  /* 关键：给导航栏独立的米色背景，不再依赖大图 */
+  background: rgba(248, 244, 236, 0.98) !important; 
   border-bottom: 3px solid var(--border-color) !important;
   box-shadow: 0 4px 0 rgba(78, 59, 49, 0.1);
   z-index: 9999 !important;
@@ -68,10 +69,12 @@ h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
   box-sizing: border-box;
 }
 
+/* 导航文字样式 */
 #site-name, #blog_name a {
   color: var(--primary) !important;
   font-size: 1.8rem !important;
   text-shadow: none;
+  font-weight: bold;
 }
 
 #menu-item a {
@@ -82,6 +85,7 @@ h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
   border-radius: 8px;
   transition: all 0.2s;
   font-family: 'Patrick Hand', sans-serif !important;
+  font-weight: bold;
 }
 
 #menu-item a:hover {
@@ -91,24 +95,83 @@ h1, h2, h3, h4, h5, h6, a, .site-title, .menu-item {
 }
 
 /* =========================================
-   【关键修复】复活简介卡片 (强制位移)
+   4. 悬浮介绍卡片 (独立背景 + 边框 + 定位)
    ========================================= */
-/* 将 #site-info 从原来的流中脱离，强制定位到导航栏下方 */
 #site-info {
-  position: absolute !important; /* 改为绝对定位 */
-  top: 90px !important; /* 距离顶部 90px (导航栏 70px + 间距 20px) */
+  /* 关键：绝对定位，脱离文档流，直接定在导航栏下方 */
+  position: absolute !important;
+  top: 90px !important; /* 导航栏高度 70px + 间距 20px */
   left: 50% !important;
   transform: translateX(-50%) !important; /* 水平居中 */
+  
   width: 90% !important;
   max-width: 800px !important;
-  margin: 0 !important; /* 清除默认边距 */
+  margin: 0 !important;
   
-  /* 手绘风格样式 */
+  /* 关键：独立的白色背景和粗黑边框，确保即使没大图也能看见 */
   background: #fffdf5 !important;
   border: 3px solid var(--border-color) !important;
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; /* 不规则圆角 */
   padding: 40px 30px !important;
-  box-shadow: 8px 8px 0px var(--ink-brown) !important;
+  box-shadow: 8px 8px 0px var(--ink-brown) !important; /* 硬阴影 */
+  
   text-align: center;
   z-index: 100 !important;
-  display: block !impo
+  display: block !important;
+  opacity: 1 !important;
+  animation: wobble 3s infinite ease-in-out;
+}
+
+/* 简介文字样式 */
+#site-subtitle {
+  display: block !important;
+  color: var(--ink-brown) !important;
+  font-size: 1.5rem !important;
+  line-height: 1.8;
+  white-space: pre-line; /* 支持换行 */
+  font-family: 'Patrick Hand', sans-serif !important;
+  text-align: left;
+  text-indent: 10px;
+}
+
+/* 隐藏多余的向下箭头 */
+#scroll-down, .scroll-down-effects {
+  display: none !important;
+}
+
+/* 给下方内容留出空间，防止被固定导航栏遮挡 */
+#home_top {
+  padding-top: 250px !important; /* 留出足够空间给导航栏 + 卡片 */
+}
+
+/* =========================================
+   5. 其他组件手绘化
+   ========================================= */
+#recent-posts > .recent-post-item,
+.aside-content .card-widget {
+  background: #fffdf5 !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  box-shadow: 5px 5px 0px var(--ink-brown) !important;
+  transition: all 0.3s;
+}
+
+#recent-posts > .recent-post-item:hover,
+.aside-content .card-widget:hover {
+  transform: translate(-3px, -3px) rotate(-1deg);
+  box-shadow: 10px 10px 0px var(--accent) !important;
+}
+
+.btn, .button-click, .pagination .page-number.current {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 15px 225px 15px 255px !important;
+  box-shadow: 3px 3px 0px var(--border-color);
+  font-family: 'ZCOOL KuaiLe', cursive !important;
+}
+
+@keyframes wobble {
+  0%, 100% { transform: translateX(-50%) rotate(-1deg); }
+  50% { transform: translateX(-50%) rotate(1deg); }
+}
