@@ -1,0 +1,149 @@
+/* =========================================
+   Hexo 大胆手绘风格 (Hand-Drawn Style)
+   ========================================= */
+
+:root {
+  /* 配色方案 */
+  --bg-paper: #F8F4EC; /* 米白画布 */
+  --ink-dark: #222222; /* 近黑墨水 */
+  --ink-brown: #4E3B31; /* 深褐文字 */
+  --color-blue: #2A3A68; /* 深蓝 */
+  --color-orange: #FF8C42; /* 活力橙 */
+  --color-green: #5F7A3C; /* 草木绿 */
+  --accent-pink: #F72585; /* 亮粉强调 */
+  --border-width: 2.5px; /* 手绘线条粗细 */
+}
+
+/* 1. 全局背景：带纹理的画布 */
+body {
+  background-color: var(--bg-paper) !important;
+  /* 使用在线噪点纹理，模拟纸张质感 */
+  background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), 
+                    linear-gradient(to bottom right, #fdfbf7, #f2ebd9);
+  background-blend-mode: multiply;
+  color: var(--ink-brown);
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; /* 正文保持清晰，略带书写感 */
+}
+
+/* 2. 字体设置：标题用手写风，正文用清晰字体 */
+/* 引入 Google Fonts 的手写字体 (如果国内访问慢，可替换为本地字体或系统手写体) */
+@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&display=swap');
+
+h1, h2, h3, h4, h5, h6, .site-title, .menu-item {
+  font-family: 'Indie Flower', 'Patrick Hand', 'KaiTi', 'STKaiti', cursive !important;
+  color: var(--ink-dark);
+  font-weight: bold;
+  text-transform: none; /* 保持大小写自然 */
+}
+
+/* 3. 卡片与容器：不规则边缘 + 粗墨线边框 + 手绘阴影 */
+#page-header, .post-card, .recent-posts > .recent-post-item, .aside-content > .card-widget, .read-more {
+  background: #fffdf5 !important; /* 卡片内部稍白，模拟贴纸感 */
+  border: var(--border-width) solid var(--ink-dark) !important;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; /* 模拟手绘的不规则圆角 */
+  box-shadow: 5px 5px 0px var(--ink-brown) !important; /* 硬阴影，模拟马克笔涂抹 */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 鼠标悬停效果：轻微抖动 + 阴影加深 */
+.post-card:hover, .recent-posts > .recent-post-item:hover, .aside-content > .card-widget:hover {
+  transform: translate(-2px, -2px) rotate(-1deg);
+  box-shadow: 8px 8px 0px var(--color-orange) !important;
+}
+
+/* 4. 按钮：高饱和色彩 + 粗边框 */
+button, .btn, .highlight-copy-btn, .pagination .page-number.current, .pagination .page-number:hover {
+  background-color: var(--color-orange) !important;
+  color: #fff !important;
+  border: var(--border-width) solid var(--ink-dark) !important;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  font-family: 'Indie Flower', cursive !important;
+  font-size: 1.1rem;
+  box-shadow: 3px 3px 0px var(--ink-dark);
+  transition: transform 0.1s;
+}
+
+button:active, .btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--ink-dark);
+}
+
+/* 5. 链接与交互：下划线模拟笔触 */
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+  border-bottom: 2px dashed var(--color-blue); /* 虚线模拟手绘断续感 */
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--accent-pink);
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
+}
+
+/* 6. 输入框：手绘边框 */
+input, textarea {
+  background: #fff !important;
+  border: var(--border-width) solid var(--ink-dark) !important;
+  border-radius: 10px 20px 5px 25px !important; /* 随意圆角 */
+  padding: 10px;
+  font-family: 'Patrick Hand', cursive, sans-serif !important;
+  color: var(--ink-dark);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-pink) !important;
+  box-shadow: 4px 4px 0px rgba(247, 37, 133, 0.3);
+}
+
+/* 7. 代码块：模拟笔记本撕页或黑板 */
+figure.highlight {
+  background: #2d2d2d !important;
+  border: var(--border-width) solid var(--ink-dark) !important;
+  border-radius: 10px;
+  box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+}
+figure.highlight::before {
+  content: "My Notes";
+  font-family: 'Indie Flower', cursive;
+  color: #fff;
+  background: var(--color-blue);
+  display: block;
+  padding: 5px;
+  text-align: center;
+  border-bottom: 2px solid #000;
+}
+
+/* 8. 特殊装饰：给标题加一点“涂鸦”感 (可选) */
+.post-title a {
+  position: relative;
+  display: inline-block;
+}
+/* 简单的 hover 涂鸦效果 */
+.post-title a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 10px;
+  background: url('https://www.transparenttextures.com/patterns/diagmonds-light.png'); 
+  opacity: 0.3;
+  z-index: -1;
+  transform: rotate(-2deg);
+}
+
+/* 9. 滚动条：自定义为粗线条 */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-green);
+  border: 2px solid var(--ink-dark);
+  border-radius: 10px;
+}
