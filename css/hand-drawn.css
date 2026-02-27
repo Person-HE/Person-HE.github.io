@@ -1,8 +1,7 @@
 /* =========================================
-   Hexo Butterfly 手绘风格 + 强制去除大图
+   Hexo Butterfly 手绘风格 - 修复版 (导航 + 简介可见)
    ========================================= */
 
-/* 引入字体 */
 @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Patrick+Hand&display=swap');
 
 :root {
@@ -14,7 +13,7 @@
   --border-color: #4E3B31;
 }
 
-/* 1. 全局背景：纸张纹理 */
+/* 1. 全局背景 */
 body {
   background-color: var(--bg-paper) !important;
   background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(to bottom right, #fdfbf7, #f2ebd9);
@@ -23,120 +22,120 @@ body {
   color: var(--ink-brown);
 }
 
-/* 字体设置 */
 h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title {
-  font-family: 'ZCOOL KuaiLe', 'Indie Flower', cursive !important;
+  font-family: 'ZCOOL KuaiLe', cursive !important;
   color: var(--ink-dark);
   font-weight: bold;
 }
 
 /* =========================================
-   【核心修改】强制去除巨大灰色背景 & 缩小头部
+   【修复核心】导航栏与背景处理
    ========================================= */
 
-/* 1. 隐藏默认的整个顶部图片容器 (包括那个灰色的) */
-#page-header.full_page, 
-#page-header.not-top-img,
-#page-header .full_bg,
-#page-header .apple-line {
-  height: 0 !important;
-  min-height: 0 !important;
-  background-image: none !important;
+/* A. 只隐藏背景图片层，保留容器结构 */
+#page-header.full_page {
+  background-image: none !important; /* 去掉灰色图 */
   background-color: transparent !important;
-  display: none !important; /* 直接隐藏掉背景层 */
+  height: 100vh; /* 保持高度以防布局塌陷，但我们会把内容提上来 */
+  min-height: auto;
 }
 
-/* 2. 重新定义 #page-header 为紧凑导航栏 */
-#page-header {
-  position: relative !important;
-  height: 70px !important; /* 固定高度 */
-  min-height: 70px !important;
-  background: rgba(248, 244, 236, 0.95) !important; /* 米色半透明背景 */
+/* B. 强制定义导航栏样式 (让它独立显示) */
+#nav {
+  background: rgba(248, 244, 236, 0.95) !important; /* 独立的米色背景 */
+  backdrop-filter: blur(5px);
   border-bottom: 3px solid var(--border-color) !important;
   box-shadow: 0 4px 0 rgba(0,0,0,0.05);
-  z-index: 100;
+  height: 70px !important;
   display: flex !important;
   align-items: center;
+  position: fixed !important; /* 固定在顶部 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000 !important; /* 确保在最上层 */
+  padding: 0 20px;
 }
 
-/* 3. 调整导航栏内部元素 */
-#site-name, #site-title {
+/* 修复导航栏内部文字颜色 */
+#site-name, #site-title, #blog_name a {
+  color: var(--primary) !important;
+  font-family: 'ZCOOL KuaiLe', cursive !important;
   font-size: 1.6rem !important;
-  text-shadow: none;
-  color: var(--primary);
-  font-family: 'ZCOOL KuaiLe', cursive !important;
-}
-
-#blog_name a {
-  font-family: 'ZCOOL KuaiLe', cursive !important;
   font-weight: bold;
+  text-shadow: none !important;
 }
 
 #menu-item a {
-  font-size: 1.1rem;
-  margin: 0 12px;
-  font-weight: bold;
-  color: var(--ink-brown);
-  padding: 5px 10px;
-  border-radius: 10px;
-  transition: all 0.2s;
+  color: var(--ink-brown) !important;
   font-family: 'Patrick Hand', sans-serif !important;
+  font-size: 1.1rem !important;
+  font-weight: bold;
+  margin: 0 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  transition: all 0.2s;
 }
 
 #menu-item a:hover {
-  background: var(--accent);
-  color: white;
+  background: var(--accent) !important;
+  color: #fff !important;
   transform: rotate(-2deg);
 }
 
 /* =========================================
-   首页简介卡片化 (替代原来的大屏背景)
+   【修复核心】首页简介卡片 (强制显示)
    ========================================= */
 
-/* 让 site-info 脱离原来的全屏背景限制，变成独立卡片 */
+/* 让简介容器脱离原来的全屏背景依赖 */
 #site-info {
-  background: #fffdf5;
-  border: 3px solid var(--border-color);
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-  padding: 3rem 2rem;
-  box-shadow: 6px 6px 0px var(--ink-brown);
-  max-width: 800px;
-  margin: 40px auto 0; /* 上边距40px，让它离导航栏远一点 */
-  text-align: center;
   position: relative;
-  z-index: 10;
-  animation: wobble 2s infinite ease-in-out; /* 添加一点晃动感 */
+  z-index: 100;
+  margin-top: 120px !important; /* 关键：向下推，避开固定的导航栏 */
+  background: #fffdf5 !important; /* 独立的白色背景 */
+  border: 3px solid var(--border-color) !important;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  padding: 3rem 2rem !important;
+  box-shadow: 6px 6px 0px var(--ink-brown) !important;
+  max-width: 800px;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  animation: wobble 3s infinite ease-in-out;
 }
 
+/* 确保副标题文字可见 */
 #site-subtitle {
-  font-size: 1.4rem;
+  color: var(--ink-brown) !important;
+  font-size: 1.4rem !important;
   line-height: 1.8;
   white-space: pre-line;
-  color: var(--ink-brown);
-  font-family: 'Patrick Hand', sans-serif;
-  text-align: left; /* 让文字左对齐，像手账一样 */
+  font-family: 'Patrick Hand', sans-serif !important;
+  text-align: left;
   text-indent: 1em;
+  display: block !important; /* 强制显示 */
+  opacity: 1 !important;
 }
 
-/* 隐藏默认的向下箭头 */
-#scroll-down .scroll-down-effects {
+/* 隐藏原本可能存在的巨大空白占位符 */
+#page-header.not-top-img {
+  height: auto !important;
+  margin-bottom: 0 !important;
+}
+
+/* 隐藏向下箭头 */
+#scroll-down, .scroll-down-effects {
   display: none !important;
 }
 
-/* 修复首页布局，防止空白 */
-#home_top {
-  padding-top: 20px;
-  background: transparent;
-}
-
 /* =========================================
-   其他手绘风格组件
+   其他组件手绘化
    ========================================= */
 
 /* 文章卡片 */
 #recent-posts > .recent-post-item,
-.aside-content .card-widget,
-.read-more {
+.aside-content .card-widget {
   background: #fffdf5 !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
@@ -151,30 +150,16 @@ h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title {
 }
 
 /* 按钮 */
-.btn, .button-click, .pagination .page-number.current, .pagination .page-number:hover {
+.btn, .button-click, .pagination .page-number.current {
   background: var(--accent) !important;
   color: #fff !important;
   border: 2px solid var(--border-color) !important;
   border-radius: 15px 225px 15px 255px !important;
   box-shadow: 3px 3px 0px var(--border-color);
   font-family: 'ZCOOL KuaiLe', cursive !important;
-  font-size: 1.1rem;
 }
 
-.btn:hover {
-  background: var(--primary) !important;
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px var(--border-color);
-}
-
-/* 滚动条 */
-::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
-}
-
-/* 小动画 */
+/* 动画 */
 @keyframes wobble {
   0%, 100% { transform: rotate(-1deg); }
   50% { transform: rotate(1deg); }
