@@ -1,8 +1,8 @@
 /* =========================================
-   Hexo Butterfly 手绘风格定制
+   Hexo Butterfly 手绘风格 + 强制去除大图
    ========================================= */
 
-/* 引入字体 (确保 index.html 或主题配置里引入了 Google Fonts) */
+/* 引入字体 */
 @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Patrick+Hand&display=swap');
 
 :root {
@@ -14,7 +14,7 @@
   --border-color: #4E3B31;
 }
 
-/* 1. 全局背景 */
+/* 1. 全局背景：纸张纹理 */
 body {
   background-color: var(--bg-paper) !important;
   background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(to bottom right, #fdfbf7, #f2ebd9);
@@ -23,41 +23,124 @@ body {
   color: var(--ink-brown);
 }
 
-/* 2. 字体：标题用手写体 */
-h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title {
+/* 字体设置 */
+h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title, .widget-title {
   font-family: 'ZCOOL KuaiLe', 'Indie Flower', cursive !important;
   color: var(--ink-dark);
   font-weight: bold;
 }
 
-/* 3. 头部导航栏 (让头部变小、变手绘) */
+/* =========================================
+   【核心修改】强制去除巨大灰色背景 & 缩小头部
+   ========================================= */
+
+/* 1. 隐藏默认的整个顶部图片容器 (包括那个灰色的) */
+#page-header.full_page, 
+#page-header.not-top-img,
+#page-header .full_bg,
+#page-header .apple-line {
+  height: 0 !important;
+  min-height: 0 !important;
+  background-image: none !important;
+  background-color: transparent !important;
+  display: none !important; /* 直接隐藏掉背景层 */
+}
+
+/* 2. 重新定义 #page-header 为紧凑导航栏 */
 #page-header {
-  background: rgba(248, 244, 236, 0.9) !important;
-  border-bottom: 3px solid var(--border-color);
-  box-shadow: none;
-  height: 60px; /* 强制减小高度 */
-  display: flex;
+  position: relative !important;
+  height: 70px !important; /* 固定高度 */
+  min-height: 70px !important;
+  background: rgba(248, 244, 236, 0.95) !important; /* 米色半透明背景 */
+  border-bottom: 3px solid var(--border-color) !important;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+  z-index: 100;
+  display: flex !important;
   align-items: center;
 }
 
+/* 3. 调整导航栏内部元素 */
 #site-name, #site-title {
-  font-size: 1.5rem !important;
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  font-size: 1.6rem !important;
+  text-shadow: none;
+  color: var(--primary);
+  font-family: 'ZCOOL KuaiLe', cursive !important;
 }
 
-#menu-item {
+#blog_name a {
+  font-family: 'ZCOOL KuaiLe', cursive !important;
+  font-weight: bold;
+}
+
+#menu-item a {
   font-size: 1.1rem;
-  margin: 0 10px;
+  margin: 0 12px;
+  font-weight: bold;
+  color: var(--ink-brown);
+  padding: 5px 10px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-family: 'Patrick Hand', sans-serif !important;
 }
 
-/* 4. 卡片风格 (文章列表、侧边栏) */
+#menu-item a:hover {
+  background: var(--accent);
+  color: white;
+  transform: rotate(-2deg);
+}
+
+/* =========================================
+   首页简介卡片化 (替代原来的大屏背景)
+   ========================================= */
+
+/* 让 site-info 脱离原来的全屏背景限制，变成独立卡片 */
+#site-info {
+  background: #fffdf5;
+  border: 3px solid var(--border-color);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  padding: 3rem 2rem;
+  box-shadow: 6px 6px 0px var(--ink-brown);
+  max-width: 800px;
+  margin: 40px auto 0; /* 上边距40px，让它离导航栏远一点 */
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  animation: wobble 2s infinite ease-in-out; /* 添加一点晃动感 */
+}
+
+#site-subtitle {
+  font-size: 1.4rem;
+  line-height: 1.8;
+  white-space: pre-line;
+  color: var(--ink-brown);
+  font-family: 'Patrick Hand', sans-serif;
+  text-align: left; /* 让文字左对齐，像手账一样 */
+  text-indent: 1em;
+}
+
+/* 隐藏默认的向下箭头 */
+#scroll-down .scroll-down-effects {
+  display: none !important;
+}
+
+/* 修复首页布局，防止空白 */
+#home_top {
+  padding-top: 20px;
+  background: transparent;
+}
+
+/* =========================================
+   其他手绘风格组件
+   ========================================= */
+
+/* 文章卡片 */
 #recent-posts > .recent-post-item,
 .aside-content .card-widget,
 .read-more {
   background: #fffdf5 !important;
   border: 2px solid var(--border-color) !important;
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important; /* 不规则圆角 */
-  box-shadow: 5px 5px 0px var(--ink-brown) !important; /* 硬阴影 */
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+  box-shadow: 5px 5px 0px var(--ink-brown) !important;
   transition: all 0.3s;
 }
 
@@ -67,8 +150,8 @@ h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title {
   box-shadow: 8px 8px 0px var(--accent) !important;
 }
 
-/* 5. 按钮风格 */
-.btn, .button-click, .pagination .page-number.current {
+/* 按钮 */
+.btn, .button-click, .pagination .page-number.current, .pagination .page-number:hover {
   background: var(--accent) !important;
   color: #fff !important;
   border: 2px solid var(--border-color) !important;
@@ -78,37 +161,21 @@ h1, h2, h3, h4, h5, h6, .site-title, .menu-item, .post-title {
   font-size: 1.1rem;
 }
 
-.btn:hover, .button-click:hover {
+.btn:hover {
   background: var(--primary) !important;
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0px var(--border-color);
 }
 
-/* 6. 首页简介区域 (Hero) 美化 */
-#site-info {
-  background: rgba(255, 255, 255, 0.6);
-  border: 3px solid var(--border-color);
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-  padding: 2rem;
-  box-shadow: 5px 5px 0px var(--border-color);
-}
-
-#site-subtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  white-space: pre-line; /* 支持换行 */
-}
-
-/* 7. 输入框 */
-input, textarea {
-  border: 2px solid var(--border-color) !important;
-  border-radius: 10px 20px 5px 25px !important;
-  background: #fff;
-}
-
-/* 8. 滚动条 */
+/* 滚动条 */
 ::-webkit-scrollbar-thumb {
   background: var(--primary);
   border: 2px solid var(--border-color);
   border-radius: 10px;
+}
+
+/* 小动画 */
+@keyframes wobble {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
 }
