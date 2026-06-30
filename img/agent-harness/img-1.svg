@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow4" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="gapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc3545;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#ffc107;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg4)"/>
+  
+  <text x="450" y="35" font-family="Microsoft YaHei, sans-serif" font-size="20" font-weight="bold" fill="#212529" text-anchor="middle">Agent 从 Demo 到产品的鸿沟</text>
+  <text x="450" y="58" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#6c757d" text-anchor="middle">Harness Engineering 就是跨越这道鸿沟的桥梁</text>
+  
+  <!-- 左侧：Demo -->
+  <rect x="50" y="90" width="280" height="370" fill="#d1ecf1" rx="12" stroke="#17a2b8" stroke-width="2" filter="url(#shadow4)"/>
+  <text x="190" y="120" font-family="Microsoft YaHei, sans-serif" font-size="16" font-weight="bold" fill="#0c5460" text-anchor="middle">Demo 阶段（实验室）</text>
+  
+  <rect x="70" y="140" width="240" height="50" fill="#fff" rx="6" stroke="#17a2b8" stroke-width="1"/>
+  <text x="190" y="160" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#0c5460" text-anchor="middle">单次调用，人工输入</text>
+  <text x="190" y="178" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">"帮我查一下北京天气"</text>
+  
+  <rect x="70" y="200" width="240" height="50" fill="#fff" rx="6" stroke="#17a2b8" stroke-width="1"/>
+  <text x="190" y="220" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#0c5460" text-anchor="middle">理想环境，无干扰</text>
+  <text x="190" y="238" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">网络稳定、数据干净、用户配合</text>
+  
+  <rect x="70" y="260" width="240" height="50" fill="#fff" rx="6" stroke="#17a2b8" stroke-width="1"/>
+  <text x="190" y="280" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#0c5460" text-anchor="middle">成本不敏感</text>
+  <text x="190" y="298" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">Token消耗、API费用不在考虑范围</text>
+  
+  <rect x="70" y="320" width="240" height="50" fill="#fff" rx="6" stroke="#17a2b8" stroke-width="1"/>
+  <text x="190" y="340" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#0c5460" text-anchor="middle">容错率高</text>
+  <text x="190" y="358" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">出错了人工重新输入即可</text>
+  
+  <rect x="70" y="380" width="240" height="50" fill="#fff" rx="6" stroke="#17a2b8" stroke-width="1"/>
+  <text x="190" y="400" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#0c5460" text-anchor="middle">无安全要求</text>
+  <text x="190" y="418" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">本地运行，不涉及用户数据</text>
+  
+  <!-- 右侧：Production -->
+  <rect x="570" y="90" width="280" height="370" fill="#d4edda" rx="12" stroke="#28a745" stroke-width="2" filter="url(#shadow4)"/>
+  <text x="710" y="120" font-family="Microsoft YaHei, sans-serif" font-size="16" font-weight="bold" fill="#155724" text-anchor="middle">Production 阶段（生产环境）</text>
+  
+  <rect x="590" y="140" width="240" height="50" fill="#fff" rx="6" stroke="#28a745" stroke-width="1"/>
+  <text x="710" y="160" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#155724" text-anchor="middle">7×24小时自动运行</text>
+  <text x="710" y="178" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">处理成千上万用户的并发请求</text>
+  
+  <rect x="590" y="200" width="240" height="50" fill="#fff" rx="6" stroke="#28a745" stroke-width="1"/>
+  <text x="710" y="220" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#155724" text-anchor="middle">恶劣环境，充满噪音</text>
+  <text x="710" y="238" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">恶意输入、网络抖动、脏数据</text>
+  
+  <rect x="590" y="260" width="240" height="50" fill="#fff" rx="6" stroke="#28a745" stroke-width="1"/>
+  <text x="710" y="280" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#155724" text-anchor="middle">成本敏感</text>
+  <text x="710" y="298" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">Token消耗=真金白银，需严格管控</text>
+  
+  <rect x="590" y="320" width="240" height="50" fill="#fff" rx="6" stroke="#28a745" stroke-width="1"/>
+  <text x="710" y="340" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#155724" text-anchor="middle">零容忍</text>
+  <text x="710" y="358" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">一次错误可能导致业务损失/品牌危机</text>
+  
+  <rect x="590" y="380" width="240" height="50" fill="#fff" rx="6" stroke="#28a745" stroke-width="1"/>
+  <text x="710" y="400" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#155724" text-anchor="middle">安全合规</text>
+  <text x="710" y="418" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#6c757d" text-anchor="middle">数据隐私、权限控制、审计追踪</text>
+  
+  <!-- 中间：鸿沟 -->
+  <polygon points="350,90 550,90 550,460 350,460" fill="url(#gapGrad)" opacity="0.15"/>
+  <text x="450" y="200" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#dc3545" text-anchor="middle">鸿</text>
+  <text x="450" y="230" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#dc3545" text-anchor="middle">沟</text>
+  
+  <!-- 桥梁 -->
+  <rect x="340" y="270" width="220" height="50" fill="#6f42c1" rx="8" filter="url(#shadow4)"/>
+  <text x="450" y="290" font-family="Microsoft YaHei, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">Harness Engineering</text>
+  <text x="450" y="308" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#e2d9f3" text-anchor="middle">约束 + 监控 + 反馈 + 兜底 + 评估</text>
+  
+  <line x1="330" y1="295" x2="340" y2="295" stroke="#6f42c1" stroke-width="4"/>
+  <line x1="560" y1="295" x2="570" y2="295" stroke="#6f42c1" stroke-width="4"/>
+  
+  <!-- 底部统计 -->
+  <text x="450" y="470" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#495057" text-anchor="middle">2026年行业数据：90%的Agent项目卡在Demo阶段，仅10%成功跨越鸿沟进入生产环境</text>
+</svg>

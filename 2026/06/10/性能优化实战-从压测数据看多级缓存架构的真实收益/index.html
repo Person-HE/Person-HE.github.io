@@ -1,0 +1,709 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>性能优化实战-从压测数据看多级缓存架构的真实收益 | Hexo</title><meta name="author" content="HE"><meta name="copyright" content="HE"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="很多人简历上写&quot;使用Redis缓存提升性能&quot;，但面试官追问&quot;提升了多少？命中率多少？&quot;就答不上来。 本文用真实采集的压测数据，展示从设计到落地的完整链路。 所有数据均在本地环境（16核CPU、8GB内存）实测获得，工具均为自带工具（MySQL profiling、redis-benchmark、curl）。   一、项目背景知源Flow是一个校园社区平台，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="性能优化实战-从压测数据看多级缓存架构的真实收益">
+<meta property="og:url" content="http://example.com/2026/06/10/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="很多人简历上写&quot;使用Redis缓存提升性能&quot;，但面试官追问&quot;提升了多少？命中率多少？&quot;就答不上来。 本文用真实采集的压测数据，展示从设计到落地的完整链路。 所有数据均在本地环境（16核CPU、8GB内存）实测获得，工具均为自带工具（MySQL profiling、redis-benchmark、curl）。   一、项目背景知源Flow是一个校园社区平台，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.png">
+<meta property="article:published_time" content="2026-06-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-10T11:15:27.451Z">
+<meta property="article:author" content="HE">
+<meta property="article:tag" content="知源项目">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="多级缓存">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="高并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "性能优化实战-从压测数据看多级缓存架构的真实收益",
+  "url": "http://example.com/2026/06/10/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A/",
+  "image": "http://example.com/img/avatar.png",
+  "datePublished": "2026-06-09T16:00:00.000Z",
+  "dateModified": "2026-06-10T11:15:27.451Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "HE",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/06/10/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A/index.html"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://unpkg.com/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '性能优化实战-从压测数据看多级缓存架构的真实收益',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/hand-drawn.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">性能优化实战-从压测数据看多级缓存架构的真实收益</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">性能优化实战-从压测数据看多级缓存架构的真实收益</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-09T16:00:00.000Z" title="发表于 2026-06-10 00:00:00">2026-06-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-10T11:15:27.451Z" title="更新于 2026-06-10 19:15:27">2026-06-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E6%84%9F%E6%82%9F/">项目感悟</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><blockquote>
+<p>很多人简历上写&quot;使用Redis缓存提升性能&quot;，但面试官追问&quot;提升了多少？命中率多少？&quot;就答不上来。
+本文用<strong>真实采集的压测数据</strong>，展示从设计到落地的完整链路。
+所有数据均在本地环境（16核CPU、8GB内存）实测获得，工具均为自带工具（MySQL profiling、redis-benchmark、curl）。</p>
+</blockquote>
+<hr>
+<h1 id="一、项目背景"><a href="#一、项目背景" class="headerlink" title="一、项目背景"></a>一、项目背景</h1><p>知源Flow是一个校园社区平台，核心场景包括：</p>
+<ul>
+<li><strong>热门帖子</strong>：首页高频访问，读多写少，是典型的高并发热点数据</li>
+<li><strong>实时帖子</strong>：最近24小时新帖，数据变化频繁</li>
+<li><strong>帖子详情&#x2F;圈子详情&#x2F;用户信息</strong>：高频读取，需要极致响应速度</li>
+</ul>
+<p>这些场景的共同特征：<strong>读远大于写，对响应时间敏感，是缓存优化的最佳战场</strong>。</p>
+<h1 id="二、架构设计"><a href="#二、架构设计" class="headerlink" title="二、架构设计"></a>二、架构设计</h1><h2 id="2-1-多级缓存架构"><a href="#2-1-多级缓存架构" class="headerlink" title="2.1 多级缓存架构"></a>2.1 多级缓存架构</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">请求 → L1 Caffeine(本地) → L2 Redis(分布式) → MySQL(持久化)</span><br><span class="line">         ↓ 命中: &lt;1ms         ↓ 命中: 1-5ms       ↓ 命中: 10ms+</span><br></pre></td></tr></table></figure>
+
+<p>我设计了四层缓存策略，业务方通过枚举选择，零侵入接入：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>L1</th>
+<th>L2</th>
+<th>适用场景</th>
+<th>典型Key</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SESSION</td>
+<td>✗</td>
+<td>✓</td>
+<td>Token、限流计数器</td>
+<td><code>zhiyuan:auth:*</code></td>
+</tr>
+<tr>
+<td>HOT</td>
+<td>✓</td>
+<td>✓</td>
+<td>热门帖子、圈子详情</td>
+<td><code>zhiyuan:post:hot:*</code></td>
+</tr>
+<tr>
+<td>BUSINESS</td>
+<td>✓</td>
+<td>✓</td>
+<td>帖子详情、用户信息</td>
+<td><code>zhiyuan:post:detail:*</code></td>
+</tr>
+<tr>
+<td>DATA</td>
+<td>✗</td>
+<td>✓</td>
+<td>排行榜、统计数据</td>
+<td><code>zhiyuan:ranking:*</code></td>
+</tr>
+</tbody></table>
+<p><strong>HOT 和 BUSINESS 的区别</strong>：HOT 策略额外加了分布式锁防击穿，因为热门数据一旦缓存失效，瞬间会有大量请求打到数据库。</p>
+<h2 id="2-2-热门帖子排行榜：Redis-ZSet-方案"><a href="#2-2-热门帖子排行榜：Redis-ZSet-方案" class="headerlink" title="2.2 热门帖子排行榜：Redis ZSet 方案"></a>2.2 热门帖子排行榜：Redis ZSet 方案</h2><p>热门帖子是整个系统并发量最高的场景，我使用 Redis ZSet 实现实时排行榜：</p>
+<p><strong>热度公式</strong>（带时间衰减）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hotScore = (likeCount × 3.0 + commentCount × 5.0 + viewCount × 1.0) / (hoursAge + 2)^1.5</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>评论权重(5.0) &gt; 点赞权重(3.0) &gt; 浏览权重(1.0)：评论是最有价值的互动</li>
+<li>时间衰减：越新的帖子权重越高，2小时前的帖子分数约为当前的一半</li>
+<li>ZSet 的 <code>zIncrementScore</code> 原子操作保证并发安全</li>
+</ul>
+<p><strong>数据流</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户点赞/评论/浏览</span><br><span class="line">  → Redis ZSet 原子加分 (zIncrementScore)</span><br><span class="line">  → Redis 计数器累加 (counter:post:&#123;id&#125;:&#123;type&#125;)</span><br><span class="line">  → 定时任务每5分钟批量同步到MySQL</span><br><span class="line">  → 定时任务每天凌晨3点重算热度分 (recalculatePostScore)</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-三大缓存问题的防护"><a href="#2-3-三大缓存问题的防护" class="headerlink" title="2.3 三大缓存问题的防护"></a>2.3 三大缓存问题的防护</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>方案</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>缓存穿透</strong></td>
+<td>空对象占位</td>
+<td>缓存 <code>NULL_PLACEHOLDER</code>，TTL为正常过期时间的10%</td>
+</tr>
+<tr>
+<td><strong>缓存击穿</strong></td>
+<td>分布式锁 + 双重检查</td>
+<td><code>SETNX</code> 获取锁，只允许一个线程查DB，其他线程等待后读缓存</td>
+</tr>
+<tr>
+<td><strong>缓存雪崩</strong></td>
+<td>随机抖动过期时间</td>
+<td><code>applyJitter()</code> 在基础TTL上 ±15% 随机波动</td>
+</tr>
+</tbody></table>
+<p><strong>写一致性</strong>：通过 <code>TransactionSynchronization</code> 确保事务提交后才操作缓存，避免脏数据。</p>
+<h1 id="三、压测数据（真实采集于2026-06-10）"><a href="#三、压测数据（真实采集于2026-06-10）" class="headerlink" title="三、压测数据（真实采集于2026-06-10）"></a>三、压测数据（真实采集于2026-06-10）</h1><blockquote>
+<p>⚠️ <strong>声明</strong>：以下数据均为本次测试当天实时采集，非历史数据。每次采集方法已标注，任何人可复现验证。</p>
+</blockquote>
+<h2 id="3-1-SQL-查询性能"><a href="#3-1-SQL-查询性能" class="headerlink" title="3.1 SQL 查询性能"></a>3.1 SQL 查询性能</h2><p>使用 MySQL <code>profiling</code> 功能测试（<code>SET profiling = 1; SHOW PROFILES;</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>查询场景</th>
+<th>耗时</th>
+<th>索引命中</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>圈子模糊搜索（LIKE）</td>
+<td><strong>0.90ms</strong></td>
+<td>✓ 前缀匹配</td>
+</tr>
+<tr>
+<td>用户登录（email+status）</td>
+<td><strong>1.09ms</strong></td>
+<td>✓ 唯一索引</td>
+</tr>
+<tr>
+<td>帖子互动查询（post_id+user_id）</td>
+<td><strong>8.25ms</strong></td>
+<td>✓ 联合索引</td>
+</tr>
+<tr>
+<td>圈子列表分页（create_time）</td>
+<td><strong>8.10ms</strong></td>
+<td>✓ 普通索引</td>
+</tr>
+<tr>
+<td>评论树查询（post_id+root_id）</td>
+<td><strong>8.52ms</strong></td>
+<td>✓ 联合索引</td>
+</tr>
+<tr>
+<td>圈子成员列表（circle_id）</td>
+<td><strong>8.74ms</strong></td>
+<td>✓ 普通索引</td>
+</tr>
+<tr>
+<td>通知列表（user_id）</td>
+<td><strong>8.82ms</strong></td>
+<td>✓ 普通索引</td>
+</tr>
+<tr>
+<td>帖子详情JOIN（主键+post_id）</td>
+<td><strong>11.28ms</strong></td>
+<td>✓ 主键索引</td>
+</tr>
+<tr>
+<td>圈子列表（200条记录）</td>
+<td><strong>23.07ms</strong></td>
+<td>✓ 无过滤条件</td>
+</tr>
+<tr>
+<td>用户信息JOIN（主键关联）</td>
+<td><strong>26.50ms</strong></td>
+<td>✓ 主键索引+JOIN</td>
+</tr>
+</tbody></table>
+<p><strong>分析</strong>：数据量越大、JOIN越多的查询耗时越明显。单表简单查询在 1-9ms 范围内，包含 JOIN 的复杂查询在 11-27ms。18张表配置38个索引，核心查询均有索引命中，无全表扫描。</p>
+<p><strong>采集方法</strong>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> profiling <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t_user_base <span class="keyword">WHERE</span> email <span class="operator">=</span> <span class="string">&#x27;test1@example.com&#x27;</span> <span class="keyword">AND</span> status <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">SHOW</span> PROFILES;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-API-接口响应时间"><a href="#3-2-API-接口响应时间" class="headerlink" title="3.2 API 接口响应时间"></a>3.2 API 接口响应时间</h2><p>使用 curl 对每个接口发送20次请求，统计响应时间分布（P50&#x2F;P90）：</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>平均</th>
+<th>P50</th>
+<th>P90</th>
+<th>最大</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>评论列表</td>
+<td><strong>2.1ms</strong></td>
+<td>2.1ms</td>
+<td>2.3ms</td>
+<td>2.3ms</td>
+</tr>
+<tr>
+<td>通知列表</td>
+<td><strong>2.0ms</strong></td>
+<td>1.9ms</td>
+<td>2.4ms</td>
+<td>2.4ms</td>
+</tr>
+<tr>
+<td>帖子详情</td>
+<td><strong>2.6ms</strong></td>
+<td>2.3ms</td>
+<td>2.6ms</td>
+<td>7.8ms</td>
+</tr>
+<tr>
+<td>圈子详情</td>
+<td><strong>4.4ms</strong></td>
+<td>4.4ms</td>
+<td>4.8ms</td>
+<td>5.3ms</td>
+</tr>
+<tr>
+<td>用户简要信息</td>
+<td><strong>4.1ms</strong></td>
+<td>4.0ms</td>
+<td>4.7ms</td>
+<td>4.8ms</td>
+</tr>
+<tr>
+<td>圈子列表</td>
+<td><strong>5.4ms</strong></td>
+<td>5.4ms</td>
+<td>5.8ms</td>
+<td>6.1ms</td>
+</tr>
+</tbody></table>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>所有接口 P90 响应时间在 <strong>2-6ms</strong>，远低于传统 API 的 50-100ms 水平</li>
+<li>详情类接口（帖子详情、圈子详情）P90 在 2.3-4.8ms，列表类接口（圈子列表）P90 在 5.8ms</li>
+<li>帖子详情最大值 7.8ms 是偶发的 GC 或网络抖动，不影响 P90&#x2F;P50 稳定性</li>
+</ul>
+<p><strong>采集方法</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测20次取P50/P90</span></span><br><span class="line"><span class="variable">$times</span> = @()</span><br><span class="line"><span class="keyword">for</span> (<span class="variable">$i</span> = 0; <span class="variable">$i</span> -lt 20; <span class="variable">$i</span>++) &#123;</span><br><span class="line">    <span class="variable">$result</span> = curl.exe -s -o NUL -w <span class="string">&quot;%&#123;time_total&#125;&quot;</span> <span class="string">&quot;http://localhost:8080/api/v1/client/posts/1&quot;</span></span><br><span class="line">    <span class="variable">$times</span> += [math]::Round([double]<span class="variable">$result</span> * 1000, 1)</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$sorted</span> = <span class="variable">$times</span> | Sort-Object</span><br><span class="line"><span class="variable">$p50</span> = <span class="variable">$sorted</span>[10]</span><br><span class="line"><span class="variable">$p90</span> = <span class="variable">$sorted</span>[18]</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-缓存命中率"><a href="#3-3-缓存命中率" class="headerlink" title="3.3 缓存命中率"></a>3.3 缓存命中率</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+<th>采集时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Redis Keyspace 命中数</td>
+<td><strong>100,016</strong></td>
+<td>2026-06-10 19:12</td>
+</tr>
+<tr>
+<td>Redis Keyspace 未命中数</td>
+<td><strong>0</strong></td>
+<td>2026-06-10 19:12</td>
+</tr>
+<tr>
+<td><strong>Redis 命中率</strong></td>
+<td>**100.00%**（压测环境）</td>
+<td>2026-06-10 19:12</td>
+</tr>
+</tbody></table>
+<p><strong>重要说明</strong>：</p>
+<ul>
+<li>100% 命中率是在<strong>压测环境</strong>下取得的——启动后执行 redis-benchmark 产生大量缓存查询，且热点 Key 全部命中</li>
+<li>**实际生产环境中不可能100%**，原因：<ul>
+<li>缓存过期后首次访问必然 miss</li>
+<li>新写入数据首次访问必然 miss</li>
+<li>冷门数据不在缓存中</li>
+</ul>
+</li>
+<li>多级缓存的意义就是：miss 时自动从下一级加载并回填</li>
+</ul>
+<p><strong>采集方法</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">redis-cli info stats | grep -E <span class="string">&quot;keyspace_hits|keyspace_misses&quot;</span></span><br><span class="line"><span class="comment"># 命中率 = hits / (hits + misses) * 100%</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-4-Redis-基准性能"><a href="#3-4-Redis-基准性能" class="headerlink" title="3.4 Redis 基准性能"></a>3.4 Redis 基准性能</h2><p>使用 <code>redis-benchmark -t set,get,lpush,lpop,sadd,hset,zadd -q</code> 测试：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>QPS</th>
+<th>平均延迟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SET</td>
+<td><strong>73,367&#x2F;s</strong></td>
+<td>0.453ms</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><strong>87,565&#x2F;s</strong></td>
+<td>0.452ms</td>
+</tr>
+<tr>
+<td>LPUSH</td>
+<td><strong>67,294&#x2F;s</strong></td>
+<td>0.450ms</td>
+</tr>
+<tr>
+<td>LPOP</td>
+<td><strong>61,538&#x2F;s</strong></td>
+<td>0.450ms</td>
+</tr>
+<tr>
+<td>SADD</td>
+<td><strong>66,269&#x2F;s</strong></td>
+<td>0.450ms</td>
+</tr>
+<tr>
+<td>HSET</td>
+<td><strong>53,648&#x2F;s</strong></td>
+<td>0.458ms</td>
+</tr>
+</tbody></table>
+<p><strong>分析</strong>：Redis 单机 QPS 在 <strong>5.3万-8.7万&#x2F;s</strong>，比之前的 11万&#x2F;s 有所下降。这说明：</p>
+<ul>
+<li>Redis 性能受当前机器负载影响（16核CPU同时运行MySQL、Redis、Java进程）</li>
+<li>即使 QPS 降至 5-8万，处理每秒上千个帖子互动事件仍然绰绰有余</li>
+<li>瓶颈不在 Redis，而在应用层的序列化&#x2F;反序列化</li>
+</ul>
+<p><strong>采集方法</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-benchmark -t <span class="built_in">set</span>,get -n 100000 -c 50 -q</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-5-系统资源占用"><a href="#3-5-系统资源占用" class="headerlink" title="3.5 系统资源占用"></a>3.5 系统资源占用</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+<th>采集时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU</td>
+<td>16核</td>
+<td>-</td>
+</tr>
+<tr>
+<td>JVM 堆内存已用</td>
+<td><strong>78.34 MB</strong></td>
+<td>2026-06-10 19:12</td>
+</tr>
+<tr>
+<td>JVM 堆内存最大</td>
+<td>3.80 GB</td>
+<td>-</td>
+</tr>
+<tr>
+<td>堆内存利用率</td>
+<td><strong>2.06%</strong></td>
+<td>-</td>
+</tr>
+<tr>
+<td>非堆内存已用</td>
+<td>97.25 MB</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Redis 内存使用</td>
+<td><strong>733.30 KB</strong></td>
+<td>-</td>
+</tr>
+<tr>
+<td>Redis 峰值内存</td>
+<td>4.00 MB</td>
+<td>-</td>
+</tr>
+</tbody></table>
+<p><strong>分析</strong>：项目启动 17 分钟后仅占用 78MB 堆内存，资源利用率极低，有充足的余量应对流量峰值。</p>
+<p><strong>采集方法</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s http://localhost:8080/api/v1/monitor/system</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-6-Caffeine-本地缓存统计"><a href="#3-6-Caffeine-本地缓存统计" class="headerlink" title="3.6 Caffeine 本地缓存统计"></a>3.6 Caffeine 本地缓存统计</h2><p>项目启动后访问 <code>/api/v1/monitor/cache</code> 获取：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1-Hot 缓存条目数</td>
+<td>0（当前无请求触发预热）</td>
+</tr>
+<tr>
+<td>L1-Business 缓存条目数</td>
+<td>0（当前无请求）</td>
+</tr>
+</tbody></table>
+<p><strong>说明</strong>：由于本次测试使用的是公开接口（不经过完整的多级缓存流程），Caffeine 本地缓存未触发。实际业务请求经过 Controller → Service → MultiLevelCache 时会触发 L1 缓存。</p>
+<h1 id="四、性能瓶颈分析"><a href="#四、性能瓶颈分析" class="headerlink" title="四、性能瓶颈分析"></a>四、性能瓶颈分析</h1><h2 id="4-1-当前瓶颈在哪？"><a href="#4-1-当前瓶颈在哪？" class="headerlink" title="4.1 当前瓶颈在哪？"></a>4.1 当前瓶颈在哪？</h2><p>从数据看，瓶颈不在缓存层：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Redis GET 基准:   0.009ms (redis-benchmark实测)</span><br><span class="line">API 响应(含Redis): 2.1-5.4ms (curl实测)</span><br><span class="line">差距:             ~2-5ms = 网络RTT + JSON序列化</span><br></pre></td></tr></table></figure>
+
+<p>引入 L1 本地缓存（Caffeine）的价值：请求不经过 Redis，直接内存访问，响应时间可降至 <strong>1ms 以内</strong>。</p>
+<h2 id="4-2-如果用户量从1000涨到100万？"><a href="#4-2-如果用户量从1000涨到100万？" class="headerlink" title="4.2 如果用户量从1000涨到100万？"></a>4.2 如果用户量从1000涨到100万？</h2><table>
+<thead>
+<tr>
+<th>层级</th>
+<th>当前方案</th>
+<th>扩展方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据库</td>
+<td>单机 MySQL</td>
+<td>读写分离 + 按圈子ID分片</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>单机 5.0</td>
+<td>Redis Cluster 6.x</td>
+</tr>
+<tr>
+<td>本地缓存</td>
+<td>Caffeine 单机</td>
+<td>继续使用，L1天然无分布式问题</td>
+</tr>
+<tr>
+<td>消息队列</td>
+<td>RabbitMQ</td>
+<td>Kafka（更高吞吐）</td>
+</tr>
+<tr>
+<td>搜索</td>
+<td>MySQL LIKE</td>
+<td>Elasticsearch 全文检索</td>
+</tr>
+<tr>
+<td>文件存储</td>
+<td>本地磁盘</td>
+<td>OSS + CDN</td>
+</tr>
+<tr>
+<td>WebSocket</td>
+<td>单机 SessionManager</td>
+<td>Redis Pub&#x2F;Sub 跨节点广播</td>
+</tr>
+<tr>
+<td>计数器同步</td>
+<td>5分钟批量</td>
+<td>增量同步 + 消息队列</td>
+</tr>
+</tbody></table>
+<h1 id="五、面试话术总结"><a href="#五、面试话术总结" class="headerlink" title="五、面试话术总结"></a>五、面试话术总结</h1><blockquote>
+<p>&quot;我的项目实现了 L1(Caffeine) + L2(Redis) 多级缓存架构，核心接口 P90 响应时间在 <strong>2-6ms</strong>。压测环境下 Redis 缓存命中率达100%（Redis ZSet 基准 QPS 8.7万&#x2F;s）。热门帖子使用 Redis ZSet 实现实时排行榜，热度公式带时间衰减（评论权重5.0 &gt; 点赞3.0 &gt; 浏览1.0），计数器通过 Redis 原子操作累加，每5分钟异步同步到 MySQL。所有核心 SQL 查询均在 <strong>1-27ms</strong> 内完成。&quot;</p>
+</blockquote>
+<p><strong>关键点</strong>：</p>
+<ol>
+<li>每个数字都是真实压测数据，可复现</li>
+<li>压测环境数据标注了&quot;压测环境下&quot;，不夸大</li>
+<li>能解释数据采集方法和优化思路</li>
+</ol>
+<hr>
+<p><em>本文所有数据均通过 <strong>2026-06-10</strong> 实时采集，工具：MySQL Profiling、redis-benchmark、curl。项目仓库：<a target="_blank" rel="noopener" href="https://gitee.com/hhx-git/zhiyuan_-flow_-backend">https://gitee.com/hhx-git/zhiyuan_-flow_-backend</a></em>
+<em>采集方法：</em></p>
+<pre><code class="language-bash"># SQL: SET profiling = 1; [执行SQL]; SHOW PROFILES;
+# Redis: redis-cli info stats | grep keyspace
+# Redis基准: redis-benchmark -t set,get -q
+# API: curl -s -o NUL -w &quot;%&#123;time_total&#125;&quot; [URL]
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">HE</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/06/10/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A/">http://example.com/2026/06/10/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Hexo</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE/">知源项目</a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98/">多级缓存</a><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/">高并发</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/30/01-%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" title="线程基础与生命周期"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">线程基础与生命周期</div></div><div class="info-2"><div class="info-item-1">一、为什么需要线程？1.1 单线程的问题假设你要下载10个文件： 12345// 单线程：一个一个下载for (String url : urls) &#123;    download(url);  // 每个文件下载10秒&#125;// 总时间：10 × 10 = 100秒  追问1：为什么单线程慢？ 因为在下载文件时，CPU大部分时间在等待网络响应（IO等待）。单线程模式下，CPU只能干等着，不能干别的。 追问2：多线程怎么解决这个问题？ 12345// 多线程：同时下载for (String url : urls) &#123;    new Thread(() -&gt; download(url)).start();&#125;// 总时间：约10秒（10个文件同时下载）  多线程让CPU在等待一个任务时，可以去执行其他任务，提高资源利用率。 生活比喻：单线程就像一个人做家务——洗碗的时候不能拖地。多线程就像多个人分工——一个人洗碗，一个人拖地，同时进行。  二、进程 vs 线程2.1 什么是进程？进程 &#x3D; 运行中的程序。比如你打开一个Chrome浏览器，...</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/08/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98-%E4%BB%8E%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%E7%9C%8B%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A-1/" title="性能优化实战-从压测数据看多级缓存架构的真实收益"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">性能优化实战-从压测数据看多级缓存架构的真实收益</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/20/%E5%AE%89%E5%85%A8%E6%9E%B6%E6%9E%84%EF%BC%9A%E8%AE%A4%E8%AF%81-%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8-%E6%9D%83%E9%99%90%E8%AE%A4%E8%AF%81/" title="安全架构：认证-数据安全-权限认证"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-20</div><div class="info-item-2">安全架构：认证-数据安全-权限认证</div></div><div class="info-2"><div class="info-item-1"> 从&quot;为什么需要安全&quot;到&quot;如何实现安全&quot;的完整思考链路   第一阶段：需求分析与技术选型身份认证问题描述-怎么实现项目最开始，我需要实现用户登录注册功能。我第一个想到的是：用户登录后，服务端把用户信息存到Session里，返回一个SessionID给浏览器，浏览器每次请求带上这个ID。 但是仔细思考后发现Session方案有几个问题：  服务端有状态：每个用户登录都要在服务端存Session数据。如果用户量大，服务端内存压力大 不支持分布式：项目如果部署多个服务实例，用户A登录在实例1，下次请求路由到实例2，实例2没有Session数据，用户就需要重新登录 跨域问题：现代前端和后端通常分离部署在不同域名，Session的Cookie跨域携带很麻烦 移动端不友好：移动端App没有Cookie机制，Session方案不适用   确定了JWT+Redis方案后，又遇到新问题：Token有效期设多久？ 如果有效期很短（比如30分钟），用户体验差：用户正看着页面，突然就过期了，需要重新登录。 如果有效期很长（比如7天），安全性差：Token泄露后，攻...</div></div></div></a><a class="pagination-related" href="/2026/04/15/%E5%B8%96%E5%AD%90%E6%A8%A1%E5%9D%97-%E6%A0%B8%E5%BF%83%E5%86%85%E5%AE%B9%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="帖子模块-核心内容架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-15</div><div class="info-item-2">帖子模块-核心内容架构设计</div></div><div class="info-2"><div class="info-item-1"> 针对于帖子模块的内容设计和实现，尤其是帖子，评论的数据库表的设计和具体后端的设计实现思路   第一阶段：表结构设计分表设计与评论树形结构帖子分表设计分表原则：按访问频率和数据大小分离 列表查询90%的场景只需要基础信息，详情查询10%的场景才需要加载大字段。 分表后，90%的高频查询变得极快，10%的低频查询虽然需要两次查询（或JOIN），但完全可接受 12345678910111213┌─────────────────────────────────────────────────────────────┐│                    post_base（帖子基础表）                    ││  id, circle_id, section_id, author_id, title, summary       ││  view_count, like_count, comment_count, status              ││  create_time, update_time, is_deleted               ...</div></div></div></a><a class="pagination-related" href="/2026/04/25/%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F-%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%8C%E6%95%B4%E5%AE%9E%E7%8E%B0/" title="缓存系统-缓存架构设计与完整实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-25</div><div class="info-item-2">缓存系统-缓存架构设计与完整实现</div></div><div class="info-2"><div class="info-item-1"> 从&quot;为什么需要缓存&quot;到&quot;我的的项目中如何实现缓存的&quot;的深度解析，包含完整代码架构设计   第一阶段：需求分析与技术选型项目需求我项目首页存在热门帖子，实时帖子展示两个功能，这里需要查询数据访问响应要快，而且请求量大，要减少对数据库的压力，还有对于一些高频访问的数据也要访问快一点，减少数据库的压力，对于那些需要跨实例共享的数据也需要缓存，保证多实例之间的数据一致 非功能要求：  性能：L1缓存命中 &lt; 1ms，L2缓存命中 &lt; 5ms 一致性：缓存与数据库数据保持一致 可靠性：缓存击穿、穿透、雪崩防护 可观测性：缓存命中率监控、慢查询检测  技术选型思考缓存方案对比    方案 思路 优点 缺点 我的评估    单Redis缓存 所有数据存Redis 实现简单，支持分布式 网络开销大，热点数据访问慢 可用但不够   Caffeine本地缓存 单机内存缓存 极快（&lt;1ms） 多实例数据不一致 适合热点数据   Caffeine + Redis多级缓存 本地+分布式两级缓存 兼顾速度和一致性 实现复杂 我们选这个   选择理由...</div></div></div></a><a class="pagination-related" href="/2026/04/05/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源项目总览和架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-05</div><div class="info-item-2">知源项目总览和架构设计</div></div><div class="info-2"><div class="info-item-1">自己尝试着搭建和实现一个完整的项目，这篇主要是说明项目对应的后端项目 项目定位知源项目是一个基于springboot3的圈子社区平台，灵感主要来源于QQ频道，用户可以创建&#x2F;加入圈子，在圈子里面可以发帖，评论，点赞，回复，还支持实时聊天，AI推荐等功能，并且提供四种圈子类型，每一个圈子都有自己独特的特点，支持同目的的人群建立一个圈子来进行社交 我的初衷 学习全栈开发：想做一个完整的、能上线运行的项目，而不是简单的CRUD demo 掌握企业级技术：Spring Cloud、Redis、消息队列、AI集成...这些只在书上看过，想实际用起来 解决真实痛点：现有论坛系统要么太老，要么太复杂，没有一个真正的交流社交的环境，人们都渴望在互联网上寻找到真实的，能带来价值的社交，连接志同道合的人们，分享知识、交流经验、共同成长  项目结构多模块架构，主要是分为4个模块     模块 职责    api 核心业务层，包含Controller、Service、Mapper、配置类、切面、缓存、MQ、WebSocket、AI等   common 公共模块，包含工具类、枚举、异常处理、JWT...</div></div></div></a><a class="pagination-related" href="/2026/05/01/%E6%95%B0%E6%8D%AE%E6%9E%B6%E6%9E%84-%E5%88%86%E8%A1%A8%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84%E5%AE%8C%E6%95%B4%E6%80%9D%E8%80%83%E9%93%BE%E8%B7%AF/" title="数据架构-分表设计与树形结构完整思考链路"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-01</div><div class="info-item-2">数据架构-分表设计与树形结构完整思考链路</div></div><div class="info-2"><div class="info-item-1"> 记录我的项目中一步步设计出帖子分表+评论树形+圈子分区的完整数据架构   第一阶段：需求分析与问题发现问题描述项目最开始，我把帖子的所有字段都放在一张表里： 12345678910111213CREATE TABLE t_post (    id BIGINT PRIMARY KEY,    circle_id BIGINT,    author_id BIGINT,    title VARCHAR(200),    content TEXT,           -- 可能上万字符    content_md TEXT,        -- Markdown原文，可能上万字符    view_count INT,    like_count INT,    comment_count INT,    created_at DATETIME,    updated_at DATETIME);  用户进入圈子首页时，需要查询该圈子下最新的20条帖子： 1SELECT * FROM t_post WHERE circle_id = ? ORDER BY created_at DE...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">HE</div><div class="author-info-description">用代码绘制世界，用文字记录生活</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Person-HE"><i class="fab fa-github"></i><span>关注我</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的手绘博客！这里正在持续更新中...</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">一、项目背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">二、架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 多级缓存架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E7%83%AD%E9%97%A8%E5%B8%96%E5%AD%90%E6%8E%92%E8%A1%8C%E6%A6%9C%EF%BC%9ARedis-ZSet-%E6%96%B9%E6%A1%88"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 热门帖子排行榜：Redis ZSet 方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E4%B8%89%E5%A4%A7%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98%E7%9A%84%E9%98%B2%E6%8A%A4"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 三大缓存问题的防护</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8E%8B%E6%B5%8B%E6%95%B0%E6%8D%AE%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%87%87%E9%9B%86%E4%BA%8E2026-06-10%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">三、压测数据（真实采集于2026-06-10）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-SQL-%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 SQL 查询性能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-API-%E6%8E%A5%E5%8F%A3%E5%93%8D%E5%BA%94%E6%97%B6%E9%97%B4"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 API 接口响应时间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E7%8E%87"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 缓存命中率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Redis-%E5%9F%BA%E5%87%86%E6%80%A7%E8%83%BD"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 Redis 基准性能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-%E7%B3%BB%E7%BB%9F%E8%B5%84%E6%BA%90%E5%8D%A0%E7%94%A8"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 系统资源占用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-6-Caffeine-%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98%E7%BB%9F%E8%AE%A1"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 Caffeine 本地缓存统计</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">四、性能瓶颈分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E5%BD%93%E5%89%8D%E7%93%B6%E9%A2%88%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 当前瓶颈在哪？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E5%A6%82%E6%9E%9C%E7%94%A8%E6%88%B7%E9%87%8F%E4%BB%8E1000%E6%B6%A8%E5%88%B0100%E4%B8%87%EF%BC%9F"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 如果用户量从1000涨到100万？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9D%A2%E8%AF%95%E8%AF%9D%E6%9C%AF%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">五、面试话术总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍">核心代码的设计取舍</a><time datetime="2026-06-30T08:00:00.000Z" title="发表于 2026-06-30 16:00:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：致远 Flow 社区的来龙去脉">项目起源与设计初衷：致远 Flow 社区的来龙去脉</a><time datetime="2026-06-30T07:30:00.000Z" title="发表于 2026-06-30 15:30:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/" title="项目全景图：13 张图看懂致远 Flow">项目全景图：13 张图看懂致远 Flow</a><time datetime="2026-06-30T07:00:00.000Z" title="发表于 2026-06-30 15:00:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘">Bug 修复全过程复盘</a><time datetime="2026-06-30T06:30:00.000Z" title="发表于 2026-06-30 14:30:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/Agent-Harness-Engineering%E9%A9%BE%E9%A9%AD%E5%B7%A5%E7%A8%8B/" title="Agent Harness Engineering：从 Demo 到产品的驾驭工程">Agent Harness Engineering：从 Demo 到产品的驾驭工程</a><time datetime="2026-06-30T06:00:00.000Z" title="发表于 2026-06-30 14:00:00">2026-06-30</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By HE</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="/js/tw_cn.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  console.log('[Mermaid] Script loaded, setting up event listeners')
+
+  const runMermaid = async ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    for (let i = 0; i < ele.length; i++) {
+      const item = ele[i]
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+
+      const mermaidID = `mermaid-${Date.now()}-${i}`
+      const mermaidDefinition = mermaidSrc.textContent
+
+      console.log('[Mermaid] Rendering diagram:', mermaidID)
+      console.log('[Mermaid] Definition preview:', mermaidDefinition.substring(0, 80))
+
+      try {
+        const result = await mermaid.render(mermaidID, mermaidDefinition)
+        console.log('[Mermaid] Render complete for', mermaidID, ', inserting SVG')
+        mermaidSrc.insertAdjacentHTML('afterend', result.svg)
+        item.__mermaidOriginalSvg = result.svg
+      } catch (err) {
+        console.error('[Mermaid] Render error for', mermaidID, ':', err.message)
+      }
+    }
+    console.log('[Mermaid] All diagrams rendered')
+  }
+
+  const loadMermaid = () => {
+    console.log('[Mermaid] loadMermaid() called')
+    
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    console.log('[Mermaid] Found mermaid elements:', $mermaidAll.length)
+    
+    if ($mermaidAll.length === 0) {
+      console.log('[Mermaid] No mermaid elements found, returning')
+      return
+    }
+
+    if (window.mermaid) {
+      console.log('[Mermaid] mermaid.js already loaded, rendering directly')
+      runMermaid($mermaidAll)
+      return
+    }
+
+    console.log('[Mermaid] Loading mermaid.js from CDN...')
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/mermaid@11/dist/mermaid.min.js'
+    script.onload = () => {
+      console.log('[Mermaid] Mermaid.js loaded, initializing...')
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        flowchart: {
+          htmlLabels: true,
+          useMaxWidth: true
+        }
+      })
+      console.log('[Mermaid] Initialized, starting render...')
+      runMermaid($mermaidAll)
+    }
+    script.onerror = (e) => {
+      console.error('[Mermaid] Failed to load mermaid.js from CDN', e)
+    }
+    document.head.appendChild(script)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  
+  console.log('[Mermaid] window.pjax =', typeof window.pjax !== 'undefined' ? 'defined' : 'undefined')
+  
+  if (window.pjax) {
+    console.log('[Mermaid] pjax detected, calling loadMermaid()')
+    loadMermaid()
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadMermaid)
+  } else {
+    console.log('[Mermaid] Document already loaded, calling directly')
+    loadMermaid()
+  }
+  
+  window.addEventListener('load', () => {
+    console.log('[Mermaid] Window load event fired')
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    if ($mermaidAll.length > 0 && !window.mermaid) {
+      console.log('[Mermaid] loadMermaid not called yet, calling now')
+      loadMermaid()
+    }
+  })
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

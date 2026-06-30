@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="340" font-family="Microsoft YaHei, SimHei, sans-serif">
+<rect width="800" height="340" fill="#f8f9fa"/>
+<text x="400" y="35" font-size="18" fill="#2c3e50" text-anchor="middle" font-weight="bold" font-family="Microsoft YaHei, SimHei, sans-serif">进程 vs 线程对比</text>
+<g transform="translate(0, 50)">
+<rect x="130" y="20" width="240" height="45" fill="#3498db" rx="6"/>
+<text x="250" y="48" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="bold">进程</text>
+<rect x="430" y="20" width="240" height="45" fill="#e74c3c" rx="6"/>
+<text x="550" y="48" font-size="15" fill="#ffffff" text-anchor="middle" font-weight="bold">线程</text>
+<rect x="130" y="90" width="240" height="42" fill="#ffffff" rx="5" stroke="#3498db" stroke-width="1"/>
+<text x="250" y="116" font-size="13" fill="#2c3e50" text-anchor="middle">独立内存空间</text>
+<text x="400" y="116" font-size="16" fill="#7f8c8d" text-anchor="middle">vs</text>
+<rect x="430" y="90" width="240" height="42" fill="#ffffff" rx="5" stroke="#e74c3c" stroke-width="1"/>
+<text x="550" y="116" font-size="13" fill="#2c3e50" text-anchor="middle">共享进程内存</text>
+<rect x="130" y="145" width="240" height="42" fill="#ffffff" rx="5" stroke="#3498db" stroke-width="1"/>
+<text x="250" y="171" font-size="13" fill="#2c3e50" text-anchor="middle">创建开销大</text>
+<text x="400" y="171" font-size="16" fill="#7f8c8d" text-anchor="middle">vs</text>
+<rect x="430" y="145" width="240" height="42" fill="#ffffff" rx="5" stroke="#e74c3c" stroke-width="1"/>
+<text x="550" y="171" font-size="13" fill="#2c3e50" text-anchor="middle">创建开销小</text>
+<rect x="130" y="200" width="240" height="42" fill="#ffffff" rx="5" stroke="#3498db" stroke-width="1"/>
+<text x="250" y="226" font-size="13" fill="#2c3e50" text-anchor="middle">IPC通信</text>
+<text x="400" y="226" font-size="16" fill="#7f8c8d" text-anchor="middle">vs</text>
+<rect x="430" y="200" width="240" height="42" fill="#ffffff" rx="5" stroke="#e74c3c" stroke-width="1"/>
+<text x="550" y="226" font-size="13" fill="#2c3e50" text-anchor="middle">直接读写内存</text>
+<rect x="130" y="255" width="240" height="42" fill="#ffffff" rx="5" stroke="#3498db" stroke-width="1"/>
+<text x="250" y="281" font-size="13" fill="#2c3e50" text-anchor="middle">切换开销大</text>
+<text x="400" y="281" font-size="16" fill="#7f8c8d" text-anchor="middle">vs</text>
+<rect x="430" y="255" width="240" height="42" fill="#ffffff" rx="5" stroke="#e74c3c" stroke-width="1"/>
+<text x="550" y="281" font-size="13" fill="#2c3e50" text-anchor="middle">切换开销小</text>
+</g>
+</svg>
