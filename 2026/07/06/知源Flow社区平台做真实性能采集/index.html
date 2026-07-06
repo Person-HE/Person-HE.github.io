@@ -1,0 +1,744 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>知源Flow社区平台多级缓存JMeter真实压测 | Hexo</title><meta name="author" content="HE"><meta name="copyright" content="HE"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言上一篇性能采集文章用的是 PowerShell 脚本 + Actuator 差值法，虽然拿到了服务器侧真实 QPS，但有两个硬伤：  没有对照组——只测了&quot;有缓存&quot;，没测&quot;无缓存&quot;，面试官一句&quot;你怎么证明是缓存的作用？&quot;就能把数据打回原形 并发量太低——50 并发 2 万次请求，根本看不到 MySQL 的真实承压  这次我直接用 JM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="知源Flow社区平台多级缓存JMeter真实压测">
+<meta property="og:url" content="http://example.com/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言上一篇性能采集文章用的是 PowerShell 脚本 + Actuator 差值法，虽然拿到了服务器侧真实 QPS，但有两个硬伤：  没有对照组——只测了&quot;有缓存&quot;，没测&quot;无缓存&quot;，面试官一句&quot;你怎么证明是缓存的作用？&quot;就能把数据打回原形 并发量太低——50 并发 2 万次请求，根本看不到 MySQL 的真实承压  这次我直接用 JM">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.png">
+<meta property="article:published_time" content="2026-07-06T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-06T07:47:26.534Z">
+<meta property="article:author" content="HE">
+<meta property="article:tag" content="Spring Boot">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="压测">
+<meta property="article:tag" content="JMeter">
+<meta property="article:tag" content="多级缓存">
+<meta property="article:tag" content="知源项目">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "知源Flow社区平台多级缓存JMeter真实压测",
+  "url": "http://example.com/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/",
+  "image": "http://example.com/img/avatar.png",
+  "datePublished": "2026-07-06T02:00:00.000Z",
+  "dateModified": "2026-07-06T07:47:26.534Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "HE",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/index.html"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://unpkg.com/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '知源Flow社区平台多级缓存JMeter真实压测',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/hand-drawn.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">42</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">知源Flow社区平台多级缓存JMeter真实压测</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">知源Flow社区平台多级缓存JMeter真实压测</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-06T02:00:00.000Z" title="发表于 2026-07-06 10:00:00">2026-07-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-06T07:47:26.534Z" title="更新于 2026-07-06 15:47:26">2026-07-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E6%84%9F%E6%82%9F/">项目感悟</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上一篇性能采集文章用的是 PowerShell 脚本 + Actuator 差值法，虽然拿到了服务器侧真实 QPS，但有两个硬伤：</p>
+<ol>
+<li><strong>没有对照组</strong>——只测了&quot;有缓存&quot;，没测&quot;无缓存&quot;，面试官一句&quot;你怎么证明是缓存的作用？&quot;就能把数据打回原形</li>
+<li><strong>并发量太低</strong>——50 并发 2 万次请求，根本看不到 MySQL 的真实承压</li>
+</ol>
+<p>这次我直接用 <strong>JMeter 5.6.3</strong>，在真实 MySQL + Redis 环境下，对帖子详情接口做了 <strong>500 并发 × 90 秒 Duration</strong> 的四组控制变量压测，用数据证明多级缓存每一层的真实价值。</p>
+<hr>
+<h2 id="一、压测环境：全部真实在线，无-mock"><a href="#一、压测环境：全部真实在线，无-mock" class="headerlink" title="一、压测环境：全部真实在线，无 mock"></a>一、压测环境：全部真实在线，无 mock</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MySQL 8.0.33</td>
+<td>3306 在线</td>
+<td>数据库 <code>zhiyuan</code>，真实账号密码连接</td>
+</tr>
+<tr>
+<td>Redis 5.0.14</td>
+<td>6379 在线</td>
+<td>本地实例，每组压测前脚本自动 <code>FLUSHDB</code> 清空</td>
+</tr>
+<tr>
+<td>RabbitMQ</td>
+<td>已显式关闭</td>
+<td><code>RABBITMQ_ENABLED=false</code>，避免消息队列波动干扰</td>
+</tr>
+<tr>
+<td>zhiyuan_Flow 后端</td>
+<td>8080 在线</td>
+<td>每组由脚本重新 <code>mvn spring-boot:run</code> 启动，控制缓存开关</td>
+</tr>
+<tr>
+<td>限流</td>
+<td>已关闭</td>
+<td><code>RATE_LIMIT_ENABLED=false</code>，避免压测流量被限流拦截</td>
+</tr>
+</tbody></table>
+<p><strong>机器配置（本地单机）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">OS:       Microsoft Windows 11 Home China</span><br><span class="line">CPU:      16 逻辑核</span><br><span class="line">内存:     15.19 GB</span><br><span class="line">JDK:      17.0.17 LTS</span><br><span class="line">JMeter:   5.6.3</span><br><span class="line">SSD:      已启用</span><br></pre></td></tr></table></figure>
+
+<p>环境快照已保存为 JSON，包括所有软件版本和机器配置，可追溯。</p>
+<hr>
+<h2 id="二、数据规模：10-万级真实数据"><a href="#二、数据规模：10-万级真实数据" class="headerlink" title="二、数据规模：10 万级真实数据"></a>二、数据规模：10 万级真实数据</h2><table>
+<thead>
+<tr>
+<th>表名</th>
+<th>行数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>t_post_base</code></td>
+<td><strong>103,810</strong></td>
+<td>帖子基础数据，覆盖 10 万级</td>
+</tr>
+<tr>
+<td><code>t_post_detail</code></td>
+<td>98,354</td>
+<td>帖子详情</td>
+</tr>
+<tr>
+<td><code>t_post_comment</code></td>
+<td><strong>399,572</strong></td>
+<td>评论数据，近 40 万条</td>
+</tr>
+<tr>
+<td><code>t_post_interaction</code></td>
+<td>992,631</td>
+<td>互动数据，近 100 万条</td>
+</tr>
+<tr>
+<td><code>t_user_base</code></td>
+<td>9,993</td>
+<td>测试账号</td>
+</tr>
+</tbody></table>
+<p>JMeter 使用 <strong>帕累托分布的 10 万帖子 ID</strong>（<code>posts_pareto_100k.csv</code>），模拟真实社区的长尾访问特征：少数热帖被高频访问，大量冷帖低频访问。不是 100 个固定 ID 那种&quot;命中率虚高&quot;的假压测。</p>
+<hr>
+<h2 id="三、压测方法：控制变量-稳态模式"><a href="#三、压测方法：控制变量-稳态模式" class="headerlink" title="三、压测方法：控制变量 + 稳态模式"></a>三、压测方法：控制变量 + 稳态模式</h2><h3 id="3-1-统一参数"><a href="#3-1-统一参数" class="headerlink" title="3.1 统一参数"></a>3.1 统一参数</h3><p>每组压测参数完全相同，<strong>仅改变缓存策略</strong>：</p>
+<ul>
+<li><strong>并发</strong>：500 线程</li>
+<li><strong>Ramp-up</strong>：5 秒（短 ramp-up，快速达到目标并发）</li>
+<li><strong>持续时间</strong>：90 秒（Duration 模式，非固定循环次数）</li>
+<li><strong>预热丢弃</strong>：前 15 秒作为 JVM&#x2F;连接池&#x2F;缓存预热，<strong>只取 15~90 秒区间的稳态数据</strong></li>
+<li><strong>接口</strong>：<code>GET /api/posts/&#123;postId&#125;</code>（需 JWT 认证）</li>
+<li><strong>CSV</strong>：10 万帕累托分布帖子 ID，<code>Sharing mode = All threads</code></li>
+</ul>
+<h3 id="3-2-四组对照"><a href="#3-2-四组对照" class="headerlink" title="3.2 四组对照"></a>3.2 四组对照</h3><table>
+<thead>
+<tr>
+<th>组别</th>
+<th>名称</th>
+<th align="center">cache.enabled</th>
+<th align="center">cache.l1-enabled</th>
+<th align="center">cache.warmup-enabled</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>DB 基线</td>
+<td align="center">false</td>
+<td align="center">-</td>
+<td align="center">false</td>
+<td>无缓存，直接走 MySQL</td>
+</tr>
+<tr>
+<td>B</td>
+<td>仅 Redis</td>
+<td align="center">true</td>
+<td align="center">false</td>
+<td align="center">false</td>
+<td>只启用 L2 Redis 缓存</td>
+</tr>
+<tr>
+<td>C</td>
+<td>L1+L2 冷启动</td>
+<td align="center">true</td>
+<td align="center">true</td>
+<td align="center">false</td>
+<td>启用 Caffeine+Redis，无预热</td>
+</tr>
+<tr>
+<td>D</td>
+<td>L1+L2 预热后</td>
+<td align="center">true</td>
+<td align="center">true</td>
+<td align="center">true</td>
+<td>启用 Caffeine+Redis，启动时预热热数据</td>
+</tr>
+</tbody></table>
+<p>启动命令示例（A 组和 D 组）：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># A组：无缓存基线</span></span><br><span class="line"><span class="variable">$env:CACHE_ENABLED</span>=<span class="string">&quot;false&quot;</span></span><br><span class="line"><span class="variable">$env:CACHE_WARMUP_ENABLED</span>=<span class="string">&quot;false&quot;</span></span><br><span class="line">mvn <span class="operator">-f</span> api/pom.xml spring<span class="literal">-boot</span>:run</span><br><span class="line"></span><br><span class="line"><span class="comment"># D组：L1+L2预热后</span></span><br><span class="line"><span class="variable">$env:CACHE_ENABLED</span>=<span class="string">&quot;true&quot;</span></span><br><span class="line"><span class="variable">$env:CACHE_L1_ENABLED</span>=<span class="string">&quot;true&quot;</span></span><br><span class="line"><span class="variable">$env:CACHE_WARMUP_ENABLED</span>=<span class="string">&quot;true&quot;</span></span><br><span class="line">mvn <span class="operator">-f</span> api/pom.xml spring<span class="literal">-boot</span>:run</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-帖子详情-SQL（真实的数据库负载）"><a href="#3-3-帖子详情-SQL（真实的数据库负载）" class="headerlink" title="3.3 帖子详情 SQL（真实的数据库负载）"></a>3.3 帖子详情 SQL（真实的数据库负载）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> p.id, p.type, p.author_id,</span><br><span class="line">       <span class="keyword">CASE</span> <span class="keyword">WHEN</span> p.type <span class="operator">=</span> <span class="number">1</span> <span class="keyword">THEN</span> <span class="keyword">NULL</span> <span class="keyword">ELSE</span> u.username <span class="keyword">END</span> <span class="keyword">AS</span> authorUsername,</span><br><span class="line">       <span class="keyword">CASE</span> <span class="keyword">WHEN</span> p.type <span class="operator">=</span> <span class="number">1</span> <span class="keyword">THEN</span> <span class="string">&#x27;匿名头像&#x27;</span> <span class="keyword">ELSE</span> up.avatar <span class="keyword">END</span> <span class="keyword">AS</span> authorAvatar,</span><br><span class="line">       p.circle_id, pd.content, p.like_count, p.comment_count, p.dislike_count,</span><br><span class="line">       <span class="keyword">CASE</span> <span class="keyword">WHEN</span> p.type <span class="operator">=</span> <span class="number">2</span></span><br><span class="line">            <span class="keyword">THEN</span> (<span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> t_post_comment <span class="keyword">WHERE</span> post_id <span class="operator">=</span> p.id)</span><br><span class="line">            <span class="keyword">ELSE</span> <span class="keyword">NULL</span> <span class="keyword">END</span> <span class="keyword">AS</span> replyCount,</span><br><span class="line">       <span class="keyword">CASE</span> <span class="keyword">WHEN</span> p.type <span class="operator">=</span> <span class="number">2</span></span><br><span class="line">            <span class="keyword">THEN</span> (<span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> t_post_comment</span><br><span class="line">                  <span class="keyword">WHERE</span> post_id <span class="operator">=</span> p.id <span class="keyword">AND</span> is_best <span class="operator">=</span> <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">ELSE</span> <span class="keyword">NULL</span> <span class="keyword">END</span> <span class="keyword">AS</span> bestReplyCount,</span><br><span class="line">       p.create_time</span><br><span class="line"><span class="keyword">FROM</span> t_post_base p</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> t_user_base u <span class="keyword">ON</span> p.author_id <span class="operator">=</span> u.id</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> t_user_profile up <span class="keyword">ON</span> u.id <span class="operator">=</span> up.user_id</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> t_post_detail pd <span class="keyword">ON</span> p.id <span class="operator">=</span> pd.post_id</span><br><span class="line"><span class="keyword">WHERE</span> p.id <span class="operator">=</span> ?</span><br></pre></td></tr></table></figure>
+
+<p><strong>4 表 LEFT JOIN + 2 个子查询</strong>，这不是简单的单表查询，是真实的数据库负载。</p>
+<hr>
+<h2 id="四、核心结果"><a href="#四、核心结果" class="headerlink" title="四、核心结果"></a>四、核心结果</h2><h3 id="4-1-吞吐量与延迟（稳态-15-90-秒）"><a href="#4-1-吞吐量与延迟（稳态-15-90-秒）" class="headerlink" title="4.1 吞吐量与延迟（稳态 15~90 秒）"></a>4.1 吞吐量与延迟（稳态 15~90 秒）</h3><table>
+<thead>
+<tr>
+<th>组别</th>
+<th>总请求</th>
+<th align="center">错误</th>
+<th align="right">QPS</th>
+<th align="right">平均延迟</th>
+<th align="right">P50</th>
+<th align="right">P90</th>
+<th align="right">P95</th>
+<th align="right">P99</th>
+<th align="right">最大延迟</th>
+<th align="right">稳态时长</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A: DB 基线</td>
+<td>155,053</td>
+<td align="center">0</td>
+<td align="right"><strong>1,742.9</strong></td>
+<td align="right">284.16 ms</td>
+<td align="right">291</td>
+<td align="right">309</td>
+<td align="right">324</td>
+<td align="right">395</td>
+<td align="right">557</td>
+<td align="right">76.1 s</td>
+</tr>
+<tr>
+<td>B: 仅 Redis</td>
+<td>463,525</td>
+<td align="center">0</td>
+<td align="right"><strong>5,457.7</strong></td>
+<td align="right">91.34 ms</td>
+<td align="right">90</td>
+<td align="right">117</td>
+<td align="right">128</td>
+<td align="right">160</td>
+<td align="right">355</td>
+<td align="right">75.29 s</td>
+</tr>
+<tr>
+<td>C: L1+L2 冷启动</td>
+<td>486,882</td>
+<td align="center">0</td>
+<td align="right"><strong>5,769.1</strong></td>
+<td align="right">86.32 ms</td>
+<td align="right">86</td>
+<td align="right">110</td>
+<td align="right">118</td>
+<td align="right">140</td>
+<td align="right">281</td>
+<td align="right">75.32 s</td>
+</tr>
+<tr>
+<td>D: L1+L2 预热后</td>
+<td>471,616</td>
+<td align="center">0</td>
+<td align="right"><strong>5,609.7</strong></td>
+<td align="right">88.67 ms</td>
+<td align="right">87</td>
+<td align="right">120</td>
+<td align="right">133</td>
+<td align="right">166</td>
+<td align="right">329</td>
+<td align="right">75.47 s</td>
+</tr>
+</tbody></table>
+<p><strong>四组 0 错误</strong>，数据干净。</p>
+<h3 id="4-2-关键对比"><a href="#4-2-关键对比" class="headerlink" title="4.2 关键对比"></a>4.2 关键对比</h3><table>
+<thead>
+<tr>
+<th>对比</th>
+<th>QPS 变化</th>
+<th>延迟变化</th>
+<th>MySQL 查询变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>仅 Redis vs DB 基线</td>
+<td>+213%（1,743 → 5,458）</td>
+<td>-68%（284 → 91 ms）</td>
+<td>-94%（155,105 → 9,478）</td>
+</tr>
+<tr>
+<td>L1+L2 冷启动 vs DB 基线</td>
+<td>**+231%**（1,743 → 5,769）</td>
+<td>**-70%**（284 → 86 ms）</td>
+<td>-94%</td>
+</tr>
+<tr>
+<td>L1+L2 预热后 vs DB 基线</td>
+<td>+222%（1,743 → 5,610）</td>
+<td>-69%（284 → 89 ms）</td>
+<td>-94%</td>
+</tr>
+<tr>
+<td>L1+L2 冷启动 vs 仅 Redis</td>
+<td>+6%（5,458 → 5,769）</td>
+<td>-6%（91 → 86 ms）</td>
+<td>持平</td>
+</tr>
+</tbody></table>
+<p>引入 Redis 后，MySQL 查询量从 <strong>15.5 万次</strong> 降至 <strong>9,478 次</strong>，降幅 **94%**。再叠加 Caffeine 本地缓存，QPS 进一步从 5,458 提升到 5,769。</p>
+<h3 id="4-3-缓存命中率（应用层监控-actuator-cache-stats）"><a href="#4-3-缓存命中率（应用层监控-actuator-cache-stats）" class="headerlink" title="4.3 缓存命中率（应用层监控 /actuator/cache-stats）"></a>4.3 缓存命中率（应用层监控 <code>/actuator/cache-stats</code>）</h3><table>
+<thead>
+<tr>
+<th>组别</th>
+<th>总查询</th>
+<th>L1 命中</th>
+<th>L2 命中</th>
+<th>DB 查询</th>
+<th>总命中率</th>
+<th>avgCostMs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>155,054</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>155,054 (100%)</td>
+<td>0%</td>
+<td>2.67</td>
+</tr>
+<tr>
+<td>B</td>
+<td>463,526</td>
+<td>0 (0%)</td>
+<td>454,152 (97.98%)</td>
+<td>9,374 (2.02%)</td>
+<td><strong>97.98%</strong></td>
+<td>0.56</td>
+</tr>
+<tr>
+<td>C</td>
+<td>486,883</td>
+<td>477,502 (98.07%)</td>
+<td>2 (0%)</td>
+<td>9,379 (1.93%)</td>
+<td><strong>98.07%</strong></td>
+<td>0.14</td>
+</tr>
+<tr>
+<td>D</td>
+<td>471,617</td>
+<td>462,253 (98.01%)</td>
+<td>1 (0%)</td>
+<td>9,363 (1.99%)</td>
+<td><strong>98.01%</strong></td>
+<td>0.13</td>
+</tr>
+</tbody></table>
+<p>注意 C&#x2F;D 组 L2 命中极少——因为 L1 本地缓存已经拦截了 <strong>98%</strong> 的请求，只有 L1 未命中的长尾请求才会穿透到 Redis。</p>
+<p>缓存平均查询耗时从 A 组的 <strong>2.67 ms</strong> 降到 C&#x2F;D 组的 <strong>0.13~0.14 ms</strong>，下降了 **95%**。</p>
+<h3 id="4-4-MySQL-负载（真实-delta）"><a href="#4-4-MySQL-负载（真实-delta）" class="headerlink" title="4.4 MySQL 负载（真实 delta）"></a>4.4 MySQL 负载（真实 delta）</h3><table>
+<thead>
+<tr>
+<th>组别</th>
+<th>Queries delta</th>
+<th>Innodb rows read</th>
+<th>BP 物理读</th>
+<th>BP 逻辑读请求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>155,105</td>
+<td>799,362</td>
+<td>0</td>
+<td>4,189,854</td>
+</tr>
+<tr>
+<td>B</td>
+<td>9,478</td>
+<td>48,120</td>
+<td>0</td>
+<td>251,433</td>
+</tr>
+<tr>
+<td>C</td>
+<td>9,537</td>
+<td>48,120</td>
+<td>0</td>
+<td>251,688</td>
+</tr>
+<tr>
+<td>D</td>
+<td>9,483</td>
+<td>48,060</td>
+<td>0</td>
+<td>251,219</td>
+</tr>
+</tbody></table>
+<p>引入 Redis 后：</p>
+<ul>
+<li>MySQL 查询量：155,105 → 9,478（**-94%**）</li>
+<li>InnoDB 读取行数：799,362 → 48,120（**-94%**）</li>
+<li>Buffer Pool 物理读归零</li>
+</ul>
+<h3 id="4-5-应用进程-CPU-与连接池"><a href="#4-5-应用进程-CPU-与连接池" class="headerlink" title="4.5 应用进程 CPU 与连接池"></a>4.5 应用进程 CPU 与连接池</h3><table>
+<thead>
+<tr>
+<th>组别</th>
+<th>process_cpu_usage 平均</th>
+<th>Hikari 活跃连接平均</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>26.59%</td>
+<td>3.64</td>
+<td>CPU 未打满，瓶颈在 MySQL；连接池有持续 DB 访问</td>
+</tr>
+<tr>
+<td>B</td>
+<td>45.86%</td>
+<td>0.08</td>
+<td>请求量大幅提升，CPU 升高；缓存命中后几乎不需要 DB 连接</td>
+</tr>
+<tr>
+<td>C</td>
+<td>44.93%</td>
+<td>0.00</td>
+<td>L1 拦截后 Redis 访问也减少，CPU 略低于 B</td>
+</tr>
+<tr>
+<td>D</td>
+<td>43.16%</td>
+<td>0.08</td>
+<td>预热后热点数据已在 L1，整体负载与 C 组接近</td>
+</tr>
+</tbody></table>
+<p>A 组 Hikari 活跃连接 3.64，说明 MySQL 连接池确实在承压；B&#x2F;C&#x2F;D 组降到 0.08 甚至 0.00，缓存把数据库连接压力彻底释放了。</p>
+<hr>
+<h2 id="五、数据质量：经得起拷问"><a href="#五、数据质量：经得起拷问" class="headerlink" title="五、数据质量：经得起拷问"></a>五、数据质量：经得起拷问</h2><h3 id="5-1-Little-s-Law-校验"><a href="#5-1-Little-s-Law-校验" class="headerlink" title="5.1 Little&#39;s Law 校验"></a>5.1 Little&#39;s Law 校验</h3><p>以稳态 QPS × 平均延迟估算并发数：</p>
+<table>
+<thead>
+<tr>
+<th>组别</th>
+<th>QPS × 平均延迟</th>
+<th>估算并发</th>
+<th>JMeter 配置</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>1,743 × 0.284</td>
+<td>495</td>
+<td>500</td>
+<td>自洽</td>
+</tr>
+<tr>
+<td>B</td>
+<td>5,458 × 0.091</td>
+<td>497</td>
+<td>500</td>
+<td>自洽</td>
+</tr>
+<tr>
+<td>C</td>
+<td>5,769 × 0.086</td>
+<td>496</td>
+<td>500</td>
+<td>自洽</td>
+</tr>
+<tr>
+<td>D</td>
+<td>5,610 × 0.089</td>
+<td>499</td>
+<td>500</td>
+<td>自洽</td>
+</tr>
+</tbody></table>
+<p>并发数与 JMeter 配置一致，数据物理上自洽。</p>
+<h3 id="5-2-多维度交叉验证"><a href="#5-2-多维度交叉验证" class="headerlink" title="5.2 多维度交叉验证"></a>5.2 多维度交叉验证</h3><ol>
+<li>**JMeter 请求数 ≈ 应用层 <code>totalQueryCount</code>**——误差 &lt; 0.1%</li>
+<li>**应用层 <code>dbQueryCount</code> ≈ MySQL <code>Queries_delta</code>**——交叉吻合</li>
+<li><strong>A 组请求量最少</strong>（284 ms 延迟导致线程在单位时间内发更少请求），B&#x2F;C&#x2F;D 组请求量更多——符合 Little&#39;s Law</li>
+<li><strong>所有服务真实在线</strong>：脚本启动前检查 3306&#x2F;6379 端口，后端通过 <code>actuator/health</code> 确认 UP</li>
+<li><strong>RabbitMQ 显式关闭</strong>排除变量干扰</li>
+</ol>
+<h3 id="5-3-关于-L1-本地缓存的延迟说明"><a href="#5-3-关于-L1-本地缓存的延迟说明" class="headerlink" title="5.3 关于 L1 本地缓存的延迟说明"></a>5.3 关于 L1 本地缓存的延迟说明</h3><p>面试官可能会问：&quot;C 组和 D 组为什么只差 2~3%，预热收益去哪了？L1 到底值不值？&quot;</p>
+<p><strong>真实原因</strong>：</p>
+<ol>
+<li>本机 Redis 走的是 <code>localhost</code> 回环网络，单次 RTT 约 0.1~0.3 ms，L1 的内存访问优势被极大稀释</li>
+<li>C 组冷启动后 L1 迅速被热点数据填满，因此与 D 组差异很小</li>
+<li>L1 的核心价值不只在单机延迟，更在<strong>保护 Redis 集群</strong>：C&#x2F;D 组只有约 2% 的请求到达 Redis，Redis 查询压力从 B 组的 46.3 万次命中降至约 9 千次命中</li>
+<li>在生产环境（远程 Redis、网络 2~5 ms、高并发）下，L1 的集群保护价值会进一步放大</li>
+</ol>
+<hr>
+<h2 id="六、可写入简历的数据"><a href="#六、可写入简历的数据" class="headerlink" title="六、可写入简历的数据"></a>六、可写入简历的数据</h2><blockquote>
+<p>在 <code>zhiyuan_Flow</code> 项目中，针对帖子详情接口设计并执行了 10 万级真实数据、500 并发、90 秒 Duration 模式的四组控制变量压测：</p>
+<ul>
+<li>无缓存基线：QPS 1,743，平均延迟 284 ms，MySQL 承受 15.5 万次查询</li>
+<li>引入 Redis 后：QPS 5,458（+213%），平均延迟 91 ms（-68%），MySQL 查询降至 9,478 次（-94%），应用层缓存命中率 97.98%</li>
+<li>再叠加 Caffeine 本地缓存：L1 拦截 98% 以上请求，Redis 访问降至约 2%，QPS 提升至 5,769（+231% vs 基线），平均延迟 86 ms</li>
+<li>测试在真实 MySQL + Redis 环境下运行，0 错误，JMeter 请求数、应用缓存统计、MySQL delta 三类指标交叉验证一致</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="七、可复现性声明"><a href="#七、可复现性声明" class="headerlink" title="七、可复现性声明"></a>七、可复现性声明</h2><p>本文所有数据均来自以下真实来源，<strong>无任何估算与编造</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>采集来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>QPS &#x2F; 延迟 &#x2F; 百分位</td>
+<td>JMeter JTL 原始结果 + Python pandas 分析（<code>analyze_jtl.py</code>）</td>
+</tr>
+<tr>
+<td>缓存命中率</td>
+<td><code>/actuator/cache-stats</code> 应用层 <code>CacheMonitor</code></td>
+</tr>
+<tr>
+<td>MySQL 负载</td>
+<td><code>SHOW STATUS</code> 压测前后 delta</td>
+</tr>
+<tr>
+<td>CPU &#x2F; 连接池</td>
+<td><code>/actuator/metrics/process.cpu.usage</code>、<code>hikaricp.connections.active</code></td>
+</tr>
+<tr>
+<td>环境配置</td>
+<td><code>env_snapshot_v3.json</code> 机器 + 软件版本快照</td>
+</tr>
+<tr>
+<td>数据规模</td>
+<td>MySQL <code>information_schema.tables</code> 直查</td>
+</tr>
+</tbody></table>
+<p>所有原始 JTL 文件、JMeter 计划（<code>.jmx</code>）、监控指标 JSON、Python 分析脚本均保留在项目 <code>doc/jmeter/</code> 目录下，可完整复现。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">HE</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/">http://example.com/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Hexo</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spring-Boot/">Spring Boot</a><a class="post-meta__tags" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化</a><a class="post-meta__tags" href="/tags/%E5%8E%8B%E6%B5%8B/">压测</a><a class="post-meta__tags" href="/tags/JMeter/">JMeter</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98/">多级缓存</a><a class="post-meta__tags" href="/tags/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE/">知源项目</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/30/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">核心代码的设计取舍</div></div><div class="info-2"><div class="info-item-1">1. JwtAuthenticationFilter：白名单收紧背后的克制1.1 核心代码这是整个项目里被调用最频繁的过滤器，每一个 HTTP 请求都会穿过它。 1234567891011121314151617181920@Slf4j@Component@RequiredArgsConstructorpublic class JwtAuthenticationFilter extends OncePerRequestFilter &#123;    private final JwtUtil jwtUtil;    private final TokenManager tokenManager;    private final AntPathMatcher pathMatcher = new AntPathMatcher();    // 白名单：仅保留真正需要匿名访问的端点。    // 收紧原本过于宽泛的 /api/files/**、/api/ai/**、/api/circles/* 等。    private static final List&lt;String&gt...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/30/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-30</div><div class="info-item-2">核心代码的设计取舍</div></div><div class="info-2"><div class="info-item-1">1. JwtAuthenticationFilter：白名单收紧背后的克制1.1 核心代码这是整个项目里被调用最频繁的过滤器，每一个 HTTP 请求都会穿过它。 1234567891011121314151617181920@Slf4j@Component@RequiredArgsConstructorpublic class JwtAuthenticationFilter extends OncePerRequestFilter &#123;    private final JwtUtil jwtUtil;    private final TokenManager tokenManager;    private final AntPathMatcher pathMatcher = new AntPathMatcher();    // 白名单：仅保留真正需要匿名访问的端点。    // 收紧原本过于宽泛的 /api/files/**、/api/ai/**、/api/circles/* 等。    private static final List&lt;String&gt...</div></div></div></a><a class="pagination-related" href="/2026/04/05/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源项目总览和架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-05</div><div class="info-item-2">知源项目总览和架构设计</div></div><div class="info-2"><div class="info-item-1">自己尝试着搭建和实现一个完整的项目，这篇主要是说明项目对应的后端项目 项目定位知源项目是一个基于springboot3的圈子社区平台，灵感主要来源于QQ频道，用户可以创建&#x2F;加入圈子，在圈子里面可以发帖，评论，点赞，回复，还支持实时聊天，AI推荐等功能，并且提供四种圈子类型，每一个圈子都有自己独特的特点，支持同目的的人群建立一个圈子来进行社交 我的初衷 学习全栈开发：想做一个完整的、能上线运行的项目，而不是简单的CRUD demo 掌握企业级技术：Spring Cloud、Redis、消息队列、AI集成...这些只在书上看过，想实际用起来 解决真实痛点：现有论坛系统要么太老，要么太复杂，没有一个真正的交流社交的环境，人们都渴望在互联网上寻找到真实的，能带来价值的社交，连接志同道合的人们，分享知识、交流经验、共同成长  项目结构多模块架构，主要是分为4个模块     模块 职责    api 核心业务层，包含Controller、Service、Mapper、配置类、切面、缓存、MQ、WebSocket、AI等   common 公共模块，包含工具类、枚举、异常处理、JWT...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">HE</div><div class="author-info-description">用代码绘制世界，用文字记录生活</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">42</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Person-HE"><i class="fab fa-github"></i><span>关注我</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的手绘博客！这里正在持续更新中...</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8E%8B%E6%B5%8B%E7%8E%AF%E5%A2%83%EF%BC%9A%E5%85%A8%E9%83%A8%E7%9C%9F%E5%AE%9E%E5%9C%A8%E7%BA%BF%EF%BC%8C%E6%97%A0-mock"><span class="toc-number">2.</span> <span class="toc-text">一、压测环境：全部真实在线，无 mock</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E8%A7%84%E6%A8%A1%EF%BC%9A10-%E4%B8%87%E7%BA%A7%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE"><span class="toc-number">3.</span> <span class="toc-text">二、数据规模：10 万级真实数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8E%8B%E6%B5%8B%E6%96%B9%E6%B3%95%EF%BC%9A%E6%8E%A7%E5%88%B6%E5%8F%98%E9%87%8F-%E7%A8%B3%E6%80%81%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">三、压测方法：控制变量 + 稳态模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BB%9F%E4%B8%80%E5%8F%82%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 统一参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%9B%9B%E7%BB%84%E5%AF%B9%E7%85%A7"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 四组对照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%B8%96%E5%AD%90%E8%AF%A6%E6%83%85-SQL%EF%BC%88%E7%9C%9F%E5%AE%9E%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E8%B4%9F%E8%BD%BD%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 帖子详情 SQL（真实的数据库负载）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">四、核心结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%90%9E%E5%90%90%E9%87%8F%E4%B8%8E%E5%BB%B6%E8%BF%9F%EF%BC%88%E7%A8%B3%E6%80%81-15-90-%E7%A7%92%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 吞吐量与延迟（稳态 15~90 秒）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%85%B3%E9%94%AE%E5%AF%B9%E6%AF%94"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 关键对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%88%E5%BA%94%E7%94%A8%E5%B1%82%E7%9B%91%E6%8E%A7-actuator-cache-stats%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 缓存命中率（应用层监控 &#x2F;actuator&#x2F;cache-stats）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-MySQL-%E8%B4%9F%E8%BD%BD%EF%BC%88%E7%9C%9F%E5%AE%9E-delta%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 MySQL 负载（真实 delta）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%BA%94%E7%94%A8%E8%BF%9B%E7%A8%8B-CPU-%E4%B8%8E%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 应用进程 CPU 与连接池</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%95%B0%E6%8D%AE%E8%B4%A8%E9%87%8F%EF%BC%9A%E7%BB%8F%E5%BE%97%E8%B5%B7%E6%8B%B7%E9%97%AE"><span class="toc-number">6.</span> <span class="toc-text">五、数据质量：经得起拷问</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Little-s-Law-%E6%A0%A1%E9%AA%8C"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 Little&#39;s Law 校验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%A4%9A%E7%BB%B4%E5%BA%A6%E4%BA%A4%E5%8F%89%E9%AA%8C%E8%AF%81"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 多维度交叉验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%85%B3%E4%BA%8E-L1-%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98%E7%9A%84%E5%BB%B6%E8%BF%9F%E8%AF%B4%E6%98%8E"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 关于 L1 本地缓存的延迟说明</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%AF%E5%86%99%E5%85%A5%E7%AE%80%E5%8E%86%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">7.</span> <span class="toc-text">六、可写入简历的数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%AF%E5%A4%8D%E7%8E%B0%E6%80%A7%E5%A3%B0%E6%98%8E"><span class="toc-number">8.</span> <span class="toc-text">七、可复现性声明</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/06/%E7%9F%A5%E6%BA%90Flow%E7%A4%BE%E5%8C%BA%E5%B9%B3%E5%8F%B0%E5%81%9A%E7%9C%9F%E5%AE%9E%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86/" title="知源Flow社区平台多级缓存JMeter真实压测">知源Flow社区平台多级缓存JMeter真实压测</a><time datetime="2026-07-06T02:00:00.000Z" title="发表于 2026-07-06 10:00:00">2026-07-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍">核心代码的设计取舍</a><time datetime="2026-06-30T08:00:00.000Z" title="发表于 2026-06-30 16:00:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：致远 Flow 社区的来龙去脉">项目起源与设计初衷：致远 Flow 社区的来龙去脉</a><time datetime="2026-06-30T07:30:00.000Z" title="发表于 2026-06-30 15:30:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/" title="项目全景图：13 张图看懂致远 Flow">项目全景图：13 张图看懂致远 Flow</a><time datetime="2026-06-30T07:00:00.000Z" title="发表于 2026-06-30 15:00:00">2026-06-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/30/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘">Bug 修复全过程复盘</a><time datetime="2026-06-30T06:30:00.000Z" title="发表于 2026-06-30 14:30:00">2026-06-30</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By HE</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="/js/tw_cn.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  console.log('[Mermaid] Script loaded, setting up event listeners')
+
+  const runMermaid = async ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    for (let i = 0; i < ele.length; i++) {
+      const item = ele[i]
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+
+      const mermaidID = `mermaid-${Date.now()}-${i}`
+      const mermaidDefinition = mermaidSrc.textContent
+
+      console.log('[Mermaid] Rendering diagram:', mermaidID)
+      console.log('[Mermaid] Definition preview:', mermaidDefinition.substring(0, 80))
+
+      try {
+        const result = await mermaid.render(mermaidID, mermaidDefinition)
+        console.log('[Mermaid] Render complete for', mermaidID, ', inserting SVG')
+        mermaidSrc.insertAdjacentHTML('afterend', result.svg)
+        item.__mermaidOriginalSvg = result.svg
+      } catch (err) {
+        console.error('[Mermaid] Render error for', mermaidID, ':', err.message)
+      }
+    }
+    console.log('[Mermaid] All diagrams rendered')
+  }
+
+  const loadMermaid = () => {
+    console.log('[Mermaid] loadMermaid() called')
+    
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    console.log('[Mermaid] Found mermaid elements:', $mermaidAll.length)
+    
+    if ($mermaidAll.length === 0) {
+      console.log('[Mermaid] No mermaid elements found, returning')
+      return
+    }
+
+    if (window.mermaid) {
+      console.log('[Mermaid] mermaid.js already loaded, rendering directly')
+      runMermaid($mermaidAll)
+      return
+    }
+
+    console.log('[Mermaid] Loading mermaid.js from CDN...')
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/mermaid@11/dist/mermaid.min.js'
+    script.onload = () => {
+      console.log('[Mermaid] Mermaid.js loaded, initializing...')
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        flowchart: {
+          htmlLabels: true,
+          useMaxWidth: true
+        }
+      })
+      console.log('[Mermaid] Initialized, starting render...')
+      runMermaid($mermaidAll)
+    }
+    script.onerror = (e) => {
+      console.error('[Mermaid] Failed to load mermaid.js from CDN', e)
+    }
+    document.head.appendChild(script)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  
+  console.log('[Mermaid] window.pjax =', typeof window.pjax !== 'undefined' ? 'defined' : 'undefined')
+  
+  if (window.pjax) {
+    console.log('[Mermaid] pjax detected, calling loadMermaid()')
+    loadMermaid()
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadMermaid)
+  } else {
+    console.log('[Mermaid] Document already loaded, calling directly')
+    loadMermaid()
+  }
+  
+  window.addEventListener('load', () => {
+    console.log('[Mermaid] Window load event fired')
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    if ($mermaidAll.length > 0 && !window.mermaid) {
+      console.log('[Mermaid] loadMermaid not called yet, calling now')
+      loadMermaid()
+    }
+  })
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
