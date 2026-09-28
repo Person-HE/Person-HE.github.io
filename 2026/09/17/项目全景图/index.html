@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>项目全景图：9 张图看懂知源 Flow | Hexo</title><meta name="author" content="HE"><meta name="copyright" content="HE"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。 1. 总览，请求从浏览器到落库1234567891011121314151617181920212">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>项目全景图：9 张图看懂知源 Flow | Hexo</title><meta name="author" content="HE"><meta name="copyright" content="HE"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这是知源 Flow（Spring Boot 3.4.1 社区后端，分支 V3.0）的九张全景图。每张图管一个问题，图后面紧跟三段东西，逐节点说明，就是图里每个格子对应哪个真实类、真实文件；接线状态表，这条链路在什么条件下真跑、什么条件下不跑；还有关键源码，从仓库文件里逐字抄的，标了 路径:行号，你可以自己打开对着看。 先说读法。这九张图我不想做成&quot;完美架构展示图&quot;，它就是竣工实">
 <meta property="og:type" content="article">
 <meta property="og:title" content="项目全景图：9 张图看懂知源 Flow">
 <meta property="og:url" content="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。 1. 总览，请求从浏览器到落库1234567891011121314151617181920212">
+<meta property="og:description" content="这是知源 Flow（Spring Boot 3.4.1 社区后端，分支 V3.0）的九张全景图。每张图管一个问题，图后面紧跟三段东西，逐节点说明，就是图里每个格子对应哪个真实类、真实文件；接线状态表，这条链路在什么条件下真跑、什么条件下不跑；还有关键源码，从仓库文件里逐字抄的，标了 路径:行号，你可以自己打开对着看。 先说读法。这九张图我不想做成&quot;完美架构展示图&quot;，它就是竣工实">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/img/avatar.png">
 <meta property="article:published_time" content="2026-09-17T02:20:00.000Z">
-<meta property="article:modified_time" content="2026-09-28T03:01:45.252Z">
+<meta property="article:modified_time" content="2026-09-28T08:50:13.268Z">
 <meta property="article:author" content="HE">
 <meta property="article:tag" content="知源Flow">
 <meta property="article:tag" content="架构图">
@@ -21,7 +21,7 @@
   "url": "http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/",
   "image": "http://example.com/img/avatar.png",
   "datePublished": "2026-09-17T02:20:00.000Z",
-  "dateModified": "2026-09-28T03:01:45.252Z",
+  "dateModified": "2026-09-28T08:50:13.268Z",
   "author": [
     {
       "@type": "Person",
@@ -162,176 +162,699 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/hand-drawn.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">43</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">项目全景图：9 张图看懂知源 Flow</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">项目全景图：9 张图看懂知源 Flow</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-28T03:01:45.252Z" title="更新于 2026-09-28 11:01:45">2026-09-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E6%84%9F%E6%82%9F/">项目感悟</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><p>这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。</p>
-<h1 id="1-总览，请求从浏览器到落库"><a href="#1-总览，请求从浏览器到落库" class="headerlink" title="1. 总览，请求从浏览器到落库"></a>1. 总览，请求从浏览器到落库</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TB
+}</script><link rel="stylesheet" href="/css/hand-drawn.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">项目全景图：9 张图看懂知源 Flow</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">项目全景图：9 张图看懂知源 Flow</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-28T08:50:13.268Z" title="更新于 2026-09-28 16:50:13">2026-09-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E6%84%9F%E6%82%9F/">项目感悟</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><p>这是知源 Flow（Spring Boot 3.4.1 社区后端，分支 V3.0）的九张全景图。每张图管一个问题，图后面紧跟三段东西，逐节点说明，就是图里每个格子对应哪个真实类、真实文件；接线状态表，这条链路在什么条件下真跑、什么条件下不跑；还有关键源码，从仓库文件里逐字抄的，标了 <code>路径:行号</code>，你可以自己打开对着看。</p>
+<p>先说读法。这九张图我不想做成&quot;完美架构展示图&quot;，它就是竣工实测图，哪个格子在跑、哪个写了没接线、哪个是死代码，全按 <code>实战手记/</code> 里已经逐类 grep 过的结论如实标。判断标准就一条，源码赢。图里任何一句话都得能被仓库里的源码驳回，驳回不了才算数。</p>
+<h2 id="全文地图：九张图各回答什么问题"><a href="#全文地图：九张图各回答什么问题" class="headerlink" title="全文地图：九张图各回答什么问题"></a>全文地图：九张图各回答什么问题</h2><table>
+<thead>
+<tr>
+<th>图</th>
+<th>章节</th>
+<th>回答的问题</th>
+<th>什么时候回来看</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图1</td>
+<td>请求全链路总览</td>
+<td>一个 HTTP 请求从浏览器进来到落库，一路经过哪些真实组件？</td>
+<td>完全迷路时第一站</td>
+</tr>
+<tr>
+<td>图2</td>
+<td>Maven 三模块依赖</td>
+<td>238+41+120 个 java 文件怎么摆进三个模块，为什么依赖不能反向？</td>
+<td>想加代码不知道放哪时</td>
+</tr>
+<tr>
+<td>图3</td>
+<td>认证鉴权三道防线</td>
+<td>没登录能不能调接口？登出了 token 还能不能用（答案有点意外）？</td>
+<td>谈 JWT、谈安全题时</td>
+</tr>
+<tr>
+<td>图4</td>
+<td>权限策略模式路由</td>
+<td>&quot;谁能删谁的帖子&quot;怎么从注解路由到 6 个 Checker？其中一个为什么是死的？</td>
+<td>谈策略模式、谈越权时</td>
+</tr>
+<tr>
+<td>图5</td>
+<td>多级缓存链路</td>
+<td>L1→L2→L3 怎么读、锁怎么防击穿、P99 从 274ms 到 6ms 是怎么测出来的？</td>
+<td>谈缓存三大坑时</td>
+</tr>
+<tr>
+<td>图6</td>
+<td>通知系统</td>
+<td>一条&quot;有人评论了你&quot;的通知，从业务代码走到你手机红点要走几步？</td>
+<td>谈门面&#x2F;策略&#x2F;双通道时</td>
+</tr>
+<tr>
+<td>图7</td>
+<td>AI 纵队</td>
+<td>&#x2F;api&#x2F;ai 下面一堆端点、8 个 AgentType、熔断降级，谁真谁假？</td>
+<td>谈 LLM 工程化时</td>
+</tr>
+<tr>
+<td>图8</td>
+<td>MQ 消息流</td>
+<td>4 个交换机 8 个队列 4 个消费者，为什么实测主链路不依赖它？</td>
+<td>谈消息队列时</td>
+</tr>
+<tr>
+<td>图9</td>
+<td>WebSocket 私信时序</td>
+<td>私信从连接到送达的每一步、以及&quot;扩容即失联&quot;到底怎么回事？</td>
+<td>谈长连接与集群时</td>
+</tr>
+</tbody></table>
+<h2 id="术语表：每个词一句白话-一个比喻"><a href="#术语表：每个词一句白话-一个比喻" class="headerlink" title="术语表：每个词一句白话 + 一个比喻"></a>术语表：每个词一句白话 + 一个比喻</h2><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>英文</th>
+<th>一句白话</th>
+<th>比喻</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>子图</td>
+<td><code>subgraph</code>（Mermaid）</td>
+<td>把图里的一堆框圈成一组，表示&quot;它们属于同一层&#x2F;同一模块&quot;</td>
+<td>地图上的省界</td>
+</tr>
+<tr>
+<td>死信队列</td>
+<td>DLX, Dead Letter Exchange</td>
+<td>消息重试到死也没消费成功，被转投到另一个队列&quot;归档&quot;</td>
+<td>退信专用信箱</td>
+</tr>
+<tr>
+<td>提交后回调</td>
+<td><code>AFTER_COMMIT</code> &#x2F; <code>@TransactionalEventListener</code></td>
+<td>数据库事务真正提交之后才执行的动作（本项目通知链路<strong>没有用它</strong>，全仓 grep 0 命中）</td>
+<td>房子验收合格后才办婚礼</td>
+</tr>
+<tr>
+<td>枚举键 Map</td>
+<td><code>EnumMap</code></td>
+<td>key 限定为枚举的 Map，内部用 ordinal 当数组下标，无哈希</td>
+<td>按学号直接放格子的储物柜</td>
+</tr>
+<tr>
+<td>服务器推送事件</td>
+<td>SSE, Server-Sent Events</td>
+<td>服务端通过一个 HTTP 响应持续往浏览器吐数据流（本项目 AI 陪伴流式输出用它）</td>
+<td>水管不断流，而不是一杯一杯端</td>
+</tr>
+<tr>
+<td>设值不存在才成功</td>
+<td>SETNX, SET if Not eXists</td>
+<td>Redis 命令：key 不存在才写入并返回 true，用来抢锁</td>
+<td>会议室门口的抢占牌</td>
+</tr>
+<tr>
+<td>切面</td>
+<td>AOP &#x2F; Aspect</td>
+<td>不改原方法，在方法执行前后插一段公共逻辑（权限、限流、日志）</td>
+<td>门卫在门口查证件，不进车间改机器</td>
+</tr>
+<tr>
+<td>线程本地变量</td>
+<td>ThreadLocal</td>
+<td>每个请求线程自己独享的一份变量（本项目存当前用户 ID）</td>
+<td>每人一个私人储物柜</td>
+</tr>
+<tr>
+<td>双 Token</td>
+<td>access &#x2F; refresh token</td>
+<td>短命的门票 + 长命的换票凭证（本项目 access 2 小时、refresh 7 天，见 <code>application.yml:86-87</code>）</td>
+<td>景区门票 vs 年卡</td>
+</tr>
+<tr>
+<td>门面</td>
+<td>Facade</td>
+<td>把一堆复杂子系统包成一个简单入口（通知系统对外只有 <code>send/sendAndPush</code>）</td>
+<td>酒店前台：一个电话搞定所有服务</td>
+</tr>
+<tr>
+<td>策略</td>
+<td>Strategy</td>
+<td>同一件事按类型分给不同实现类，运行时查路由表选</td>
+<td>医院分诊台</td>
+</tr>
+<tr>
+<td>穿透&#x2F;击穿&#x2F;雪崩</td>
+<td>penetration &#x2F; breakdown &#x2F; avalanche</td>
+<td>查不存在的 key 直打库 &#x2F; 热 key 过期瞬间被挤爆 &#x2F; 大批 key 同一秒一起过期</td>
+<td>防盗门没锁 &#x2F; 大桥塌一个桥墩 &#x2F; 连锁塌方</td>
+</tr>
+<tr>
+<td>空值占位</td>
+<td>NULL placeholder</td>
+<td>库里没有的数据也在缓存里记一笔&quot;没有&quot;，免得反复查库</td>
+<td>便利贴写&quot;这本馆里没有&quot;</td>
+</tr>
+<tr>
+<td>过期抖动</td>
+<td>jitter</td>
+<td>每个缓存条目的 TTL 加随机扰动，避免同一秒集体过期</td>
+<td>上课铃错开一分钟响</td>
+</tr>
+<tr>
+<td>延迟双删</td>
+<td>delayed double delete</td>
+<td>更新库后删一次缓存，隔几百毫秒再删一次，兜住并发读写回种的旧值（本项目<strong>写了没接线</strong>，域12-② 判定&quot;三重未接线&quot;）</td>
+<td>扫完地五分钟后再扫一遍</td>
+</tr>
+<tr>
+<td>透传 ID</td>
+<td>routing key</td>
+<td>MQ 里消息贴的地址条，交换机按它决定投哪个队列</td>
+<td>信封上的收件地址</td>
+</tr>
+<tr>
+<td>条件装配</td>
+<td><code>@ConditionalOnProperty</code></td>
+<td>配置项不满足时，整个 Bean 根本不创建（本项目 MQ 全系都挂这个开关）</td>
+<td>没通电的插座</td>
+</tr>
+<tr>
+<td>水平越权</td>
+<td>horizontal privilege escalation</td>
+<td>普通用户 A 用&quot;改一下 id&quot;的招数动了用户 B 的数据</td>
+<td>拿同款钥匙开邻居家门</td>
+</tr>
+<tr>
+<td>闭&#x2F;开&#x2F;半开</td>
+<td>CLOSED &#x2F; OPEN &#x2F; HALF_OPEN</td>
+<td>熔断器三态：正常放行 &#x2F; 拒绝调用 &#x2F; 放行了试探（本项目半开是<strong>全放行</strong>，不是放探针）</td>
+<td>电闸：合上 &#x2F; 拉下 &#x2F; 试着合</td>
+</tr>
+<tr>
+<td>接线四态</td>
+<td>live &#x2F; unused &#x2F; dead &#x2F; orphan</td>
+<td>live&#x3D;运行时真被调到；unused&#x3D;Bean 建了没人调；dead&#x3D;有调用方但路永远走不通；orphan&#x3D;整条链上游断了</td>
+<td>装好的插座：在用 &#x2F; 没插电 &#x2F; 开关坏了 &#x2F; 这根线根本没接进楼</td>
+</tr>
+</tbody></table>
+<p>接线四态是这套手记的通用语言（定义在 <code>实战手记/00-README.md</code> 第 1 节），本文每张图底下都有一张&quot;接线状态表&quot;，照着它标。结论我不自己下，直接搬各域手记里已经核实过的判定，甚至是原文抄过来。</p>
+<hr>
+<h2 id="图-1｜这张图回答：一个请求从浏览器到落库，一路真的经过哪些组件？"><a href="#图-1｜这张图回答：一个请求从浏览器到落库，一路真的经过哪些组件？" class="headerlink" title="图 1｜这张图回答：一个请求从浏览器到落库，一路真的经过哪些组件？"></a>图 1｜这张图回答：一个请求从浏览器到落库，一路真的经过哪些组件？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TB
     Browser["浏览器 / 移动端"]
 
-    subgraph Backend["Spring Boot 3.4.1 单体 (8080) 无网关, 网关模块已删除"]
+    subgraph Backend["Spring Boot 3.4.1 单体 · 端口 8080 · 无网关层（网关模块已删除）"]
+        Trace["RequestTraceFilter
+Order=HIGHEST_PRECEDENCE 最先执行"]
         Filter["JwtAuthenticationFilter
-白名单精确路径 + 解析 claims 进 UserContext
-注意: 不查黑名单, 黑名单只写不读"]
-        Controller["Controller 20 个
-Auth/User/Circle/Emotion/Post/Comment/Section/
-Announcement/Message/Notification/File/
-AiChat/AiCompanion/AiDiscover/AiDigest/CircleAi/Rag 等"]
-        Aspect["AOP 切面 3 个
-Permission 限流 操作日志, 叠加无 Order"]
-        Service["Service"]
+白名单精确匹配 + 解析 claims 写入 UserContext
+注意: 不查 Redis 黑名单"]
+        Controllers["Controller 共 20 个
+controller 包 13 个 + ai 包 6 个 + CacheStatsController"]
+        subgraph Aspects["AOP 切面 3 个 · 均未标 @Order（叠加顺序不保证）"]
+            RL["RateLimitAspect
+Redis INCR 计数限流"]
+            OP["OperationLogAspect
+操作日志"]
+            PM["PermissionAspect
+@RequirePermission 归属校验"]
+        end
+        Service["Service 层
+PostServiceImpl 等 · @Transactional"]
         Cache["MultiLevelCache
-L1 Caffeine, L2 Redis, L3 MySQL"]
-        Mapper["Mapper 27 个 MyBatis-Plus"]
-        MQ["RabbitMQ 可开关
-默认关, 4 Exchange 里 3 个事件没生产者"]
-        WS["WebSocket Handler
-Session 是单机 Map"]
-        AI["AI 纵队
-companion agent audit discover digest rag"]
-        Controller --> Aspect
-        Aspect --> Service
-        Service --> Cache
-        Cache --> Mapper
-        Service --> MQ
-        Service --> WS
-        Service --> AI
+L1 Caffeine → L2 Redis → L3 MySQL"]
+        Mappers["Mapper 27 个 · MyBatis-Plus"]
+        MQBox["RabbitMQ 组件
+默认整体关闭 RABBITMQ_ENABLED=false"]
+        WSBox["WebSocket
+Session 存在单机 ConcurrentHashMap"]
+        AIBox["AI 纵队
+companion / agent / audit / discover / digest / rag"]
     end
 
-    MySQL["MySQL 8 db zhiyuan 3306"]
-    Redis["Redis 6379
-缓存 限流 token 计数"]
-    Rabbit["RabbitMQ
-RABBITMQ_ENABLED 默认 false"]
+    MySQL["MySQL 8 · 库 zhiyuan · 3306"]
+    Redis["Redis · 6379
+缓存 / 限流计数 / token 键"]
+    Rabbit["RabbitMQ · 5672"]
     LLM["LLM 网关
-LangChain4j, OpenAI 兼容协议
-坏 Key 时熔断实测 8ms"]
+LangChain4j 1.0.0-beta3 · OpenAI 兼容协议"]
 
-    Browser -->|HTTP / WS| Filter
-    Filter --> Controller
-    Mapper --> MySQL
+    Browser -->|HTTP / WS| Trace
+    Trace --> Filter
+    Filter --> Controllers
+    Controllers --> Aspects
+    Aspects --> Service
+    Service --> Cache
+    Cache --> Mappers
+    Mappers --> MySQL
     Cache --> Redis
-    MQ --> Rabbit
-    AI --> LLM
+    Service --> MQBox
+    MQBox --> Rabbit
+    Service --> WSBox
+    Service --> AIBox
+    AIBox --> LLM
 </pre></div>
 
-<p>一句话：请求先过 Filter（认证闸），进 Controller 穿过三个切面，Service 在缓存、MQ、WS、AI 之间调度。没有网关层，早删了，那玩意一共就活了三十七天。</p>
-<h1 id="2-Maven-三模块，依赖单向"><a href="#2-Maven-三模块，依赖单向" class="headerlink" title="2. Maven 三模块，依赖单向"></a>2. Maven 三模块，依赖单向</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart LR
-    Parent["父 pom
-com.zhiyuanflow
-Java 17, Boot 3.4.1
-mybatis-plus 3.5.5, jjwt 0.12.3
-caffeine 3.1.8, langchain4j 1.0.0-beta3"]
-    Models["models 120 个 java
-entity 30 个, 29 个带 TableName
-dto, vo, enums, tree"]
-    Common["common 41 个 java
-Result, 全局异常, JwtUtil
-AesUtil, 邮件, 文件存储策略"]
-    API["api 238 个 java
-controller service mapper
-cache aspect permission
-mq websocket notification ai"]
+<h3 id="逐节点说明：每个格子是哪个真实类"><a href="#逐节点说明：每个格子是哪个真实类" class="headerlink" title="逐节点说明：每个格子是哪个真实类"></a>逐节点说明：每个格子是哪个真实类</h3><ul>
+<li><strong>RequestTraceFilter</strong>：<code>api/src/main/java/com/zhiyuanflow/config/RequestTraceFilter.java</code>。它是全链路第一个执行的过滤器，类上标 <code>@Order(Ordered.HIGHEST_PRECEDENCE)</code>（该文件第 24 行）——这是全项目唯一显式声明了顺序的组件，给请求打 traceId 用。</li>
+<li><strong>JwtAuthenticationFilter</strong>：<code>api/src/main/java/com/zhiyuanflow/config/JwtAuthenticationFilter.java</code>。<code>OncePerRequestFilter</code> 子类，<code>@Component</code> 直接注册（Spring Boot 会把 Filter Bean 自动挂到主过滤器链上），负责&quot;认证&quot;这道闸：解析 <code>Bearer</code> token，把 <code>userId/username</code> 写进 <code>UserContext</code>（ThreadLocal）。图里那行&quot;不查 Redis 黑名单&quot;是真话，详见图3。</li>
+<li><strong>Controller 20 个</strong>：实测 <code>grep -rl &quot;@RestController&quot;</code> 命中 20 个文件——<code>controller</code> 包 13 个（Auth&#x2F;User&#x2F;Circle&#x2F;Post&#x2F;Comment&#x2F;Section&#x2F;Announcement&#x2F;Message&#x2F;Chat&#x2F;Notification&#x2F;File&#x2F;Emotion&#x2F;Behavior），<code>ai</code> 包 6 个（AiChat&#x2F;AiCompanion&#x2F;AiDiscover&#x2F;AiDigest&#x2F;CircleAi&#x2F;Rag），外加 <code>cache/monitor/CacheStatsController</code>。</li>
+<li><strong>三个切面</strong>：<code>aspect</code> 包下 <code>RateLimitAspect</code>、<code>OperationLogAspect</code>、<code>PermissionAspect</code> 三个 <code>@Aspect</code> 类。三者都**没有标 <code>@Order</code>**（实测 grep 全项目 <code>@Order</code> 只在 RequestTraceFilter 出现），也就是说同一个方法同时带 <code>@RateLimit</code> 和 <code>@RequirePermission</code> 时，谁先跑由 Spring 的默认顺序决定，代码层面没有承诺。这状态就是能跑，但没设计完。图里我按一组画的，没画成流水线，其实也串不起来。</li>
+<li><strong>Service → MultiLevelCache → Mapper</strong>：以帖子详情为例，调用链是 <code>PostQuerySupportService.getPostData()</code> → <code>PostCacheManager.getPostDetail()</code> → <code>CacheService</code> → <code>MultiLevelCache.get()</code>，回源 lambda 里才是 <code>postMapper.getPostDataV3(...)</code>。Mapper 27 个，实测 <code>ls api/.../mapper | wc -l</code> &#x3D; 27。</li>
+<li><strong>MQ 组件</strong>：画在图里，但<strong>默认整体不装配</strong>。<code>mq/config/RabbitMQConfig.java:13</code> 和 4 个 consumer 类上都标着 <code>@ConditionalOnProperty(prefix = &quot;spring.rabbitmq&quot;, name = &quot;enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = false)</code>，而 <code>application.yml:41</code> 给的是 <code>enabled: $&#123;RABBITMQ_ENABLED:false&#125;</code>。这条链的真实形态看图8。</li>
+<li><strong>WebSocket</strong>：<code>websocket/ChatWebSocketHandler</code> + <code>websocket/SessionManager</code>，在线表是**单机进程内的 <code>ConcurrentHashMap</code>**（<code>SessionManager.java:29</code>），看图9。</li>
+<li><strong>AI 纵队</strong>：<code>ai/</code> 包全部代码，共 58 个 java 文件（实测 <code>find ai -name &#39;*.java&#39; | wc -l</code>），入口按域拆成 agent&#x2F;companion&#x2F;discover&#x2F;digest&#x2F;rag&#x2F;audit。看图7。</li>
+<li><strong>外部依赖四个</strong>：MySQL（<code>application.yml:9</code>，库名 zhiyuan）、Redis（<code>application.yml:29-31</code>）、RabbitMQ（<code>application.yml:42-44</code>）、LLM 网关（<code>application.yml:117-121</code>，Agnes AI 兼容 OpenAI 协议，模型名 <code>agnes-2.5-flash</code>）。</li>
+</ul>
+<p><strong>这条链什么时候真的跑？</strong> 任何一次 HTTP 请求都跑前半段（Trace → Filter → Controller → 切面(如果方法有注解) → Service → Mapper → MySQL），这是主链路。走不走缓存取决于调的接口有没有接 <code>CacheService</code>（帖子详情&#x2F;圈子详情&#x2F;用户资料接了）；走不走 MQ 取决于 <code>RABBITMQ_ENABLED</code>（默认 false，且就算 true 也只是发帖路径有三处发送）；走不走 AI 取决于端点；WebSocket 只在 <code>/ws/**</code> 上跑，而 <code>JwtAuthenticationFilter</code> 对 <code>/ws/**</code> 是<strong>全放行</strong>（白名单第 53 行 <code>&quot;/ws/**&quot;</code>），WS 的鉴权在握手时由 handler 自己查 token。</p>
+<h3 id="这一层的真实接线状态"><a href="#这一层的真实接线状态" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>接线判定</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RequestTraceFilter</td>
+<td>live</td>
+<td><code>config/RequestTraceFilter.java</code>，<code>@Order(HIGHEST_PRECEDENCE)</code>，每个请求必经</td>
+</tr>
+<tr>
+<td>JwtAuthenticationFilter</td>
+<td>live（但&quot;黑名单检查&quot;这一格不存在）</td>
+<td>全文无 Redis 读取代码；黑名单只写不读（域01-⑤ <code>56: 不查库，也不查黑名单</code>）</td>
+</tr>
+<tr>
+<td>3 个切面</td>
+<td>live（顺序未声明）</td>
+<td><code>@Aspect @Component</code>，注解驱动的 pointcut 真实存在</td>
+</tr>
+<tr>
+<td>MultiLevelCache</td>
+<td>live</td>
+<td>域12-② 核对表：<code>MultiLevelCache.java</code> <strong>live（引擎本体）</strong>；但其中 <code>deleteWithDelay</code> 的上游 0 调用</td>
+</tr>
+<tr>
+<td>Mapper 27 个</td>
+<td>live</td>
+<td><code>StartApplication.java:18</code> <code>@MapperScan(&quot;com.zhiyuanflow.mapper&quot;)</code></td>
+</tr>
+<tr>
+<td>RabbitMQ 全系</td>
+<td>条件装配，默认不接线</td>
+<td><code>RABBITMQ_ENABLED:false</code>；<code>RabbitMQConfig.java:13</code></td>
+</tr>
+<tr>
+<td>WebSocket Handler&#x2F;SessionManager</td>
+<td>live（单机形态）</td>
+<td>域08-⑥ <code>382</code>：内存 Map 决定<strong>当前不可水平扩容</strong></td>
+</tr>
+<tr>
+<td>AI 纵队</td>
+<td>部分 live 部分 orphan</td>
+<td>详见图7；域16-③：8 类路由只有 3 个 handler 接线</td>
+</tr>
+<tr>
+<td>gateway 网关模块</td>
+<td><strong>不存在</strong></td>
+<td>项目里没有 gateway 模块，手记 00-README 域17 行明载&quot;活了 37 天整个删掉&quot;</td>
+</tr>
+</tbody></table>
+<h3 id="关键源码：启动类与主链路入口"><a href="#关键源码：启动类与主链路入口" class="headerlink" title="关键源码：启动类与主链路入口"></a>关键源码：启动类与主链路入口</h3><p>启动类只有五个注解，每一个都对应图上一个格子（<code>api/src/main/java/com/zhiyuanflow/StartApplication.java:14-31</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableTransactionManagement</span> <span class="comment">// 开启注解方式的事务管理</span></span><br><span class="line"><span class="meta">@EnableCaching</span> <span class="comment">// 开启缓存注解</span></span><br><span class="line"><span class="meta">@EnableScheduling</span> <span class="comment">// 开启定时任务</span></span><br><span class="line"><span class="meta">@MapperScan(&quot;com.zhiyuanflow.mapper&quot;)</span> <span class="comment">// 扫描 Mapper 接口</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StartApplication</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(StartApplication.class, args);</span><br><span class="line">        log.info(<span class="string">&quot;server started&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    Parent --> Models
-    Parent --> Common
-    Parent --> API
-    API -->|依赖| Common
-    Common -->|依赖| Models
+<p><code>@EnableScheduling</code> 意味着图里没画的定时任务层也在跑：热度刷新 <code>HeatRefreshTask</code>、摘要 Job 等。这里提前埋一句后面会展开的真话：域04-② <code>621</code> 行核实，<code>HeatRefreshTask</code>（<code>@Scheduled(fixedDelay = 3600_000, initialDelay = 60_000)</code>）每小时调一次带坏 SQL 的 <code>countWeeklyPostsByCircle</code>，SQL 异常被上层 <code>catch (Exception e) &#123; log.error(&quot;[圈子热度] 刷新失败&quot;, e); &#125;</code> 吞掉——<strong>任务在跑 ≠ 任务有效</strong>，<code>t_circle_base.heat</code> 恒停在 DDL 默认值 0，前端归一化对 <code>heat &lt;= 0</code> 直接返回下限 <code>0.05</code>，于是地图上所有圈子&quot;热度一样&quot;。这大概是全项目最响的一记了，看着像活着，其实死了。</p>
+<p>过滤器主逻辑（<code>api/src/main/java/com/zhiyuanflow/config/JwtAuthenticationFilter.java:56-106</code>，节选）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doFilterInternal</span><span class="params">(HttpServletRequest request,</span></span><br><span class="line"><span class="params">                                HttpServletResponse response,</span></span><br><span class="line"><span class="params">                                FilterChain filterChain)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> request.getRequestURI();</span><br><span class="line"></span><br><span class="line">    <span class="type">String</span> <span class="variable">authHeader</span> <span class="operator">=</span> request.getHeader(<span class="string">&quot;Authorization&quot;</span>);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">hasToken</span> <span class="operator">=</span> authHeader != <span class="literal">null</span> &amp;&amp; authHeader.startsWith(<span class="string">&quot;Bearer &quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isPublicAccess(request)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasToken) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> authHeader.substring(<span class="number">7</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="type">Long</span> <span class="variable">userId</span> <span class="operator">=</span> jwtUtil.getUserIdFromToken(token);</span><br><span class="line">                <span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> jwtUtil.getUsernameFromToken(token);</span><br><span class="line">                UserContext.setCurrentUserId(userId);</span><br><span class="line">                UserContext.setCurrentUsername(username);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                <span class="comment">// 白名单路径中，token 解析失败不影响访问</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            UserContext.clear();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>注意 <code>finally &#123; UserContext.clear(); &#125;</code>：ThreadLocal 不清，Tomcat 线程复用时会把 A 用户的身份带给 B 请求。这个必须清，不清就串了，没什么好商量的。</p>
+<hr>
+<h2 id="图-2｜这张图回答：238-41-120-个-java-文件是怎么摆进三个-Maven-模块的？"><a href="#图-2｜这张图回答：238-41-120-个-java-文件是怎么摆进三个-Maven-模块的？" class="headerlink" title="图 2｜这张图回答：238+41+120 个 java 文件是怎么摆进三个 Maven 模块的？"></a>图 2｜这张图回答：238+41+120 个 java 文件是怎么摆进三个 Maven 模块的？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart LR
+    Parent["父 pom · com.zhiyuanflow:springboot-multi-module:1.0.0
+packaging=pom · modules: models, common, api
+Boot 3.4.1 · Java 17
+dependencyManagement: mybatis-plus 3.5.5
+jjwt 0.12.3 · caffeine 3.1.8 · mysql 8.0.33"]
+    Models["models · artifactId=data-models
+实测 120 个 java
+entity 30 个 · 其中 29 个带 @TableName
+dto / vo / enums"]
+    Common["common · artifactId=common
+实测 41 个 java
+JwtUtil · Result · AesUtil
+异常体系 · 邮件 · 文件存储"]
+    API["api · artifactId=api
+实测 238 个 java
+controller service mapper cache aspect
+permission mq websocket notification ai"]
+    Boot["spring-boot-starter-parent 3.4.1"]
+
+    Boot -.->|parent 继承| Parent
+    Parent -->|聚合| Models
+    Parent -->|聚合| Common
+    Parent -->|聚合| API
+    API -->|pom 依赖 data-models + common| Common
+    Common -->|pom 依赖 data-models| Models
 </pre></div>
 
-<p>依赖方向是物理约束，反向编译不过去。这是整个项目里我最满意的一个设计，就因为它不需要自觉。</p>
-<h1 id="3-认证鉴权三道防线"><a href="#3-认证鉴权三道防线" class="headerlink" title="3. 认证鉴权三道防线"></a>3. 认证鉴权三道防线</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    Request["浏览器请求"]
-    subgraph First["第一道 JwtAuthenticationFilter"]
-        WL["白名单精确路径
-auth 五件套, posts 的 hot list search share
-circles 的 list search detail sections members 等
-文件仅 GET/HEAD 匿名, AI 仅 hot-digest 和 explain 匿名
-ws 全放行"]
-        Parse["非白名单: Bearer 取 token
-解析 userId 进 UserContext
-失败回 401, finally 必清 ThreadLocal"]
-        WL -->|命中| Pass["放行, 带 token 顺带解析身份"]
+<h3 id="逐节点说明：格子对应的真实-pom-坐标"><a href="#逐节点说明：格子对应的真实-pom-坐标" class="headerlink" title="逐节点说明：格子对应的真实 pom 坐标"></a>逐节点说明：格子对应的真实 pom 坐标</h3><ul>
+<li><strong>父 pom</strong>：仓库根 <code>pom.xml</code>。它自己不再继承业务东西，parent 是 <code>spring-boot-starter-parent</code> 3.4.1（<code>pom.xml:8-13</code>），<code>packaging</code> 是 <code>pom</code>（第 18 行），只做两件事：<strong>列模块</strong>（<code>pom.xml:22-26</code>：models、common、api）和<strong>统一版本</strong>（<code>dependencyManagement</code>，第 40-85 行）。有个细节，不看仔细就会漏：<code>langchain4j 1.0.0-beta3</code> 不在父 pom 管理，它写在 <code>api/pom.xml:82-106</code> 里、只有 api 用——因为 AI 只在 api 层。</li>
+<li><strong>models（artifactId 是 <code>data-models</code>，目录叫 models）</strong>：<code>models/pom.xml:14</code> <code>&lt;artifactId&gt;data-models&lt;/artifactId&gt;</code>。它是纯数据层：mybatis-plus starter（给实体用 <code>@TableName</code>）、validation、swagger 注解、jackson-annotations、lombok——<strong>没有 web、没有 redis、没有 jwt</strong>。实测 120 个 java 文件；<code>find models/src -path &quot;*entity*&quot; -name &quot;*.java&quot; | wc -l</code> &#x3D; 30，其中 29 个文件带 <code>@TableName</code>（grep 实测）。</li>
+<li><strong>common</strong>：<code>common/pom.xml</code>。依赖 data-models（<code>common/pom.xml:20-24</code>），外加 web&#x2F;redis&#x2F;mail&#x2F;caffeine&#x2F;jjwt&#x2F;fastjson&#x2F;hutool&#x2F;spring-security-crypto。<code>JwtUtil</code>（<code>common/src/main/java/com/zhiyuanflow/jwt/JwtUtil.java</code>）、<code>Result</code>（<code>common/src/main/java/com/zhiyuanflow/result/Result.java</code>）、<code>AesUtil</code>（<code>common/src/main/java/com/zhiyuanflow/utils/AesUtil.java</code>）都在这里。<strong>这里有个必须说实话的点</strong>：<code>AesUtil.encrypt</code> 全仓零调用（00-README 域02 行明载&quot;解密接了加密没接&quot;），一个加密工具，半个方向是 live 的，另外半个没人碰。</li>
+<li><strong>api</strong>：<code>api/pom.xml</code>。同时依赖 data-models 和 common（<code>api/pom.xml:20-30</code>），所有业务代码在这里。spring-boot-maven-plugin 的 <code>mainClass</code> 配的是 <code>com.zhiyuanflow.StartApplication</code>（<code>api/pom.xml:137</code>），所以最终可执行 jar 从 api 模块打出来。</li>
+</ul>
+<h3 id="这条链什么时候真的跑？"><a href="#这条链什么时候真的跑？" class="headerlink" title="这条链什么时候真的跑？"></a>这条链什么时候真的跑？</h3><p>这张图没有运行时——它是<strong>编译期约束</strong>。依赖方向 <code>api → common → models</code> 是物理事实：把任何一行 <code>import com.zhiyuanflow.dto...</code> 反向加进 models，<code>mvn compile</code> 直接失败。这套架构不靠人自觉。分层靠什么，靠编译器，code review 那点人情帮不上。api 里也确实立了 ArchUnit（<code>api/pom.xml:123-128</code>，<code>archunit-junit5 1.3.0</code>，test scope），架构规则有测试兜底。</p>
+<h3 id="这一层的真实接线状态-1"><a href="#这一层的真实接线状态-1" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>java 文件数（实测）</th>
+<th>关键内容</th>
+<th>接线判定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>models</td>
+<td>120</td>
+<td>entity 30 &#x2F; 29 带 <code>@TableName</code>，dto&#x2F;vo&#x2F;enums</td>
+<td>live（被 common 和 api 传递依赖）</td>
+</tr>
+<tr>
+<td>common</td>
+<td>41</td>
+<td><code>JwtUtil</code>、<code>Result</code>、<code>AesUtil</code>、邮件、存储</td>
+<td>整体 live；<code>AesUtil.encrypt</code> 零调用点（unused，域02 手记判定）</td>
+</tr>
+<tr>
+<td>api</td>
+<td>238</td>
+<td>全部业务、缓存、MQ、WS、AI</td>
+<td>live 为主体；内部各子域见后面 7 张图</td>
+</tr>
+<tr>
+<td>父 pom</td>
+<td>—</td>
+<td>dependencyManagement 统一 6 组版本</td>
+<td>live</td>
+</tr>
+<tr>
+<td>gateway 模块</td>
+<td>0</td>
+<td>曾存在（<code>AuthGlobalFilter/RateLimitFilter/GatewayConfig</code> 曾被文档登记）</td>
+<td>已整体删除（00-README 第 4 节明载全景图登记的三个网关类&quot;在源码里不存在&quot;）</td>
+</tr>
+</tbody></table>
+<h3 id="关键源码：三段逐字抄的-pom"><a href="#关键源码：三段逐字抄的-pom" class="headerlink" title="关键源码：三段逐字抄的 pom"></a>关键源码：三段逐字抄的 pom</h3><p>根 <code>pom.xml:22-38</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">modules</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">module</span>&gt;</span>models<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">module</span>&gt;</span>common<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">module</span>&gt;</span>api<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">modules</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>17<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.build.sourceEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.build.sourceEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mybatis-plus.version</span>&gt;</span>3.5.5<span class="tag">&lt;/<span class="name">mybatis-plus.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">jjwt.version</span>&gt;</span>0.12.3<span class="tag">&lt;/<span class="name">jjwt.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mysql.version</span>&gt;</span>8.0.33<span class="tag">&lt;/<span class="name">mysql.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">swagger.version</span>&gt;</span>2.2.19<span class="tag">&lt;/<span class="name">swagger.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">redis.version</span>&gt;</span>3.3.0<span class="tag">&lt;/<span class="name">redis.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">caffeine.version</span>&gt;</span>3.1.8<span class="tag">&lt;/<span class="name">caffeine.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring-boot.version</span>&gt;</span>3.4.1<span class="tag">&lt;/<span class="name">spring-boot.version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>api 对兄弟模块的依赖声明（<code>api/pom.xml:20-30</code>）：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.zhiyuanflow<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>data-models<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;project.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.zhiyuanflow<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>common<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;project.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>models 只有 5 个依赖、没有一个运行时框架（<code>models/pom.xml:19-43</code>，节选）：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.baomidou<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-plus-spring-boot3-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">optional</span>&gt;</span>true<span class="tag">&lt;/<span class="name">optional</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-validation<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>数文件这活儿我留了条命令在这儿，可以自己跑一遍（本机实测输出 238 &#x2F; 41 &#x2F; 120）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> api common models; <span class="keyword">do</span> <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$m</span>: <span class="subst">$(find $m -name &#x27;*.java&#x27; | wc -l)</span>&quot;</span>; <span class="keyword">done</span></span><br><span class="line"><span class="comment"># api: 238</span></span><br><span class="line"><span class="comment"># common: 41</span></span><br><span class="line"><span class="comment"># models: 120</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="图-3｜这张图回答：没登录能不能调接口？登出之后-token-还能不能用？"><a href="#图-3｜这张图回答：没登录能不能调接口？登出之后-token-还能不能用？" class="headerlink" title="图 3｜这张图回答：没登录能不能调接口？登出之后 token 还能不能用？"></a>图 3｜这张图回答：没登录能不能调接口？登出之后 token 还能不能用？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    Req["任意 HTTP 请求"]
+    subgraph D1["第一道 · JwtAuthenticationFilter（认证：你是谁）"]
+        WL{"isPublicAccess?
+WHITE_LIST 精确/通配路径 23 条
++ /api/files/** 仅 GET/HEAD
++ /api/ai/** 仅 GET 且 hot-digest/explain
++ /ws/** 全放行"}
+        AnonPass["匿名放行
+带 token 则顺带解析进 UserContext
+解析失败也不拦"]
+        Parse["非白名单：取 Bearer token
+getUserIdFromToken 验签
+成功 → 写 UserContext
+ExpiredJwtException → 401 Token已过期
+JwtException → 401 Token无效
+finally 必清 ThreadLocal"]
+        WL -->|命中| AnonPass
         WL -->|未命中| Parse
     end
-    subgraph Second["第二道 PermissionAspect"]
-        Anno["拦截带 RequirePermission 的方法
-resource action resourceIdParamName relatedId"]
-        Route["PermissionContext 按资源类型路由
-找不到 checker 返回 false, fail-closed"]
-        Anno --> Route
+    subgraph D2["第二道 · PermissionAspect（鉴权：你能不能动这条数据）"]
+        Anno{"方法标了 @RequirePermission ?"}
+        Route["PermissionContext.check
+按 ResourceType 路由到 Checker
+找不到 checker → return false（fail-closed）"]
+        Deny["PermissionDeniedException → 403"]
+        Anno -->|是| Route
+        Route -->|false| Deny
     end
-    subgraph Third["第三道 Service 层"]
-        Biz["业务校验, 状态机 资源存在性
+    subgraph D3["第三道 · Service 业务校验"]
+        Biz["状态机 / 资源存在性 / 业务规则
 BusinessException"]
     end
-    Request --> First
-    Pass --> Ctrl["Controller"]
-    Parse -->|通过| Second
-    Route -->|通过| Third
+    Req --> WL
+    AnonPass --> Ctrl["Controller"]
+    Parse -->|通过| Anno
+    Anno -->|否, 直接放行| Ctrl
+    Route -->|true| Biz
     Biz --> Ctrl
 </pre></div>
 
-<p>这里有个图上看不到但必须说的洞：登出后 token 写进 Redis 黑名单，但过滤器不查黑名单，所以&quot;吊销&quot;只做了一半，剩余有效期内 token 照样能用。旧图我在 Filter 那一格写了&quot;+ 黑名单&quot;，那是我以为，源码里 0 命中。</p>
-<h1 id="4-权限策略路由，6-个-Checker"><a href="#4-权限策略路由，6-个-Checker" class="headerlink" title="4. 权限策略路由，6 个 Checker"></a>4. 权限策略路由，6 个 Checker</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    C["方法上的 RequirePermission 注解"]
-    A["PermissionAspect 反射取参数"]
+<h3 id="逐节点说明-必须讲穿的一个洞"><a href="#逐节点说明-必须讲穿的一个洞" class="headerlink" title="逐节点说明 + 必须讲穿的一个洞"></a>逐节点说明 + 必须讲穿的一个洞</h3><h4 id="第一道闸的白名单长什么样"><a href="#第一道闸的白名单长什么样" class="headerlink" title="第一道闸的白名单长什么样"></a>第一道闸的白名单长什么样</h4><p>全文照抄 <code>JwtAuthenticationFilter.java:31-54</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> List&lt;String&gt; WHITE_LIST = List.of(</span><br><span class="line">        <span class="string">&quot;/api/auth/login&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/auth/register&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/auth/refresh&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/auth/send-code&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/auth/verify-code&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/posts/hot&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/posts/realtime&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/posts/list&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/posts/search&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/posts/*/share&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/list&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/search&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/sections&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/members&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/announcements&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/share&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/stats&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/circles/*/personal&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/sections/*&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/api/announcements/circle/*&quot;</span>,</span><br><span class="line">        <span class="string">&quot;/ws/**&quot;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>两个整树放行不在 List 里，写在 <code>isPublicAccess</code> 方法体（同文件 108-124 行）：<code>/api/files/</code> 前缀<strong>只放行 GET&#x2F;HEAD</strong>（上传删除必须登录）；<code>/api/ai/</code> 前缀<strong>只放行 GET 且路径以 <code>hot-digest</code> 或 <code>explain</code> 开头</strong>（聊天、发现、RAG 一律要登录）。注意 <code>&quot;/api/auth/logout&quot;</code> <strong>不在</strong>白名单里——登出必须带着有效 token 来，这是对的：你要作废一张票，总得先证明票是你的。</p>
+<h4 id="洞在这里：黑名单只写不读"><a href="#洞在这里：黑名单只写不读" class="headerlink" title="洞在这里：黑名单只写不读"></a>洞在这里：黑名单只写不读</h4><p>登出时 <code>AuthServiceImpl.logout</code>（<code>service/impl/AuthServiceImpl.java:234-248</code>，节选）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">logout</span><span class="params">(String token)</span> &#123;</span><br><span class="line">    log.info(<span class="string">&quot;用户登出，token: &#123;&#125;&quot;</span>, token);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取 Token 的过期时间</span></span><br><span class="line">    <span class="type">Date</span> <span class="variable">expirationDate</span> <span class="operator">=</span> jwtUtil.getExpirationDateFromToken(token);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算剩余有效期</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">remainTime</span> <span class="operator">=</span> <span class="number">0L</span>;</span><br><span class="line">    <span class="keyword">if</span> (expirationDate != <span class="literal">null</span>) &#123;</span><br><span class="line">        remainTime = expirationDate.getTime() - System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将 Token 加入黑名单</span></span><br><span class="line">    <span class="keyword">if</span> (remainTime &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        tokenManager.blacklist(token, remainTime);</span><br></pre></td></tr></table></figure>
+
+<p><code>TokenManager.blacklist</code>（<code>cache/manager/TokenManager.java:48-52</code>）把 <code>blacklist:&#123;token&#125;</code> 写进 Redis 并设剩余 TTL：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">blacklist</span><span class="params">(String token, <span class="type">long</span> expireMillis)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">key</span> <span class="operator">=</span> BLACKLIST_PREFIX + token;</span><br><span class="line">    stringRedisTemplate.opsForValue().set(key, <span class="string">&quot;1&quot;</span>, expireMillis, TimeUnit.MILLISECONDS);</span><br><span class="line">    log.debug(<span class="string">&quot;[Token黑名单] expireMillis=&#123;&#125;&quot;</span>, expireMillis);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可是回头读 <code>JwtAuthenticationFilter</code> 全文（131 行），<strong>没有任何一处注入或使用 Redis 去查这个 key</strong>。<code>TokenManager</code> 的类注释写着&quot;验证Token时检查Redis是否存在&quot;。那是设计时候想的，实现里没这么写。所以&quot;登出&quot;的真实效果是：<strong>剩余 2 小时有效期内，这枚 access token 照样能用</strong>（access 2 小时 &#x2F; refresh 7 天见 <code>application.yml:86-87</code>）。域01-⑤ <code>485</code> 行的判定我直接引用：*&quot;本域的处理方式（写黑名单但没人读、user:token:* 那套写完就是死代码、refresh 换新不废旧）&quot;*。&quot;吊销&quot;只做了一半。</p>
+<h4 id="refresh-也不轮换旧票"><a href="#refresh-也不轮换旧票" class="headerlink" title="refresh 也不轮换旧票"></a>refresh 也不轮换旧票</h4><p><code>AuthServiceImpl.refreshToken</code>（<code>service/impl/AuthServiceImpl.java:282-311</code>，节选）验证旧 refresh 有效后直接 <code>generateToken/generateRefreshToken</code> 造一对新的返回，旧 refresh 没有任何&quot;作废旧的&quot;动作——7 天有效期内旧 refresh 可以被反复使用换新票。</p>
+<h4 id="第二、三道闸与两种相反的失败哲学"><a href="#第二、三道闸与两种相反的失败哲学" class="headerlink" title="第二、三道闸与两种相反的失败哲学"></a>第二、三道闸与两种相反的失败哲学</h4><p>PermissionAspect 的机制图4 整章讲；第三道 Service 层校验如 <code>PostServiceImpl.createPost</code> 开头三连查（圈子存在、是成员、情绪枚举合法，<code>service/impl/PostServiceImpl.java:86-97</code>）。第二道闸的失败策略和限流的失败策略是<strong>故意相反</strong>的：<code>PermissionContext.check</code> 查不到 Checker 返回 false（fail-closed，判不了就拒）；<code>RateLimitAspect</code> 拿不到限流标识时直接 <code>joinPoint.proceed()</code>（fail-open，限流挂了不能把业务打死）。同一仓库两种失败哲学并存，域13-② <code>386</code> 行明载这组对比，面试里要能讲清哪个该 fail-open、哪个又必须 fail-closed，这个应该比背八股值钱吧。</p>
+<h4 id="限流这半道闸真实存在"><a href="#限流这半道闸真实存在" class="headerlink" title="限流这半道闸真实存在"></a>限流这半道闸真实存在</h4><p><code>AuthController</code> 七个端点全带 <code>@RateLimit</code>（实测行号 50&#x2F;63&#x2F;76&#x2F;94&#x2F;108&#x2F;122&#x2F;138）：login 60 秒 5 次、register 60 秒 3 次、logout 30 次、&#x2F;me 10 次、refresh 60 次等。量化战果在 <code>evidence-pack/fresh_ratelimit_20260916_185953.json</code>：固定同一 XFF 连发 60 次 login，**业务码 200 &#x3D; 5 次、429 &#x3D; 55 次，拦截率 91.7%**（<code>SUMMARY.md</code> §2 同数）。</p>
+<h3 id="这一层的真实接线状态-2"><a href="#这一层的真实接线状态-2" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>防线&#x2F;机制</th>
+<th>类</th>
+<th>接线判定</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>认证闸</td>
+<td>JwtAuthenticationFilter</td>
+<td>live</td>
+<td>每请求必经（除 Boot 未接管的路径）</td>
+</tr>
+<tr>
+<td>黑名单写入</td>
+<td>TokenManager.blacklist</td>
+<td>live（只写）</td>
+<td>登出调用它，写入真实发生</td>
+</tr>
+<tr>
+<td>黑名单读取</td>
+<td>（不存在）</td>
+<td><strong>代码没有</strong></td>
+<td>Filter 全文无 Redis 读取；域01 判定&quot;只写不读&quot;</td>
+</tr>
+<tr>
+<td><code>TokenManager.storeToken</code></td>
+<td>—</td>
+<td>unused</td>
+<td><code>user:token:*</code> 那套写完就是死代码（域01-⑤ <code>485</code>）</td>
+</tr>
+<tr>
+<td>refresh 旧票作废</td>
+<td>—</td>
+<td><strong>代码没有</strong></td>
+<td>换新不废旧（域01-⑤ <code>485</code>）</td>
+</tr>
+<tr>
+<td>限流</td>
+<td>RateLimitAspect</td>
+<td>live</td>
+<td><code>RedisTemplate.increment</code> + 首次设 expire；拿不到 key 时 fail-open 放行</td>
+</tr>
+<tr>
+<td>鉴权路由</td>
+<td>PermissionAspect + PermissionContext</td>
+<td>live</td>
+<td>fail-closed；但 FILE 一路被路由错位（图4）</td>
+</tr>
+<tr>
+<td>Service 校验</td>
+<td>各 ServiceImpl</td>
+<td>live</td>
+<td><code>BusinessException</code> 经全局异常处理器出 4xx</td>
+</tr>
+</tbody></table>
+<h3 id="关键源码：401-的写法（手写-JSON，没有走-Result-类）"><a href="#关键源码：401-的写法（手写-JSON，没有走-Result-类）" class="headerlink" title="关键源码：401 的写法（手写 JSON，没有走 Result 类）"></a>关键源码：401 的写法（手写 JSON，没有走 Result 类）</h3><p><code>JwtAuthenticationFilter.java:126-130</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">sendUnauthorized</span><span class="params">(HttpServletResponse response, String message)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);</span><br><span class="line">    response.setContentType(<span class="string">&quot;application/json;charset=UTF-8&quot;</span>);</span><br><span class="line">    response.getWriter().write(<span class="string">&quot;&#123;\&quot;code\&quot;:401,\&quot;message\&quot;:\&quot;&quot;</span> + message + <span class="string">&quot;\&quot;,\&quot;data\&quot;:null&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>手写是因为过滤器在 Spring MVC 之前，全局异常处理器（<code>@RestControllerAdvice</code>）还管不到这里。&quot;认证失败的响应&quot;和&quot;业务异常的响应&quot;就这么分两个地方各拼各的，根源都在这，这个点面试也老被问。</p>
+<hr>
+<h2 id="图-4｜这张图回答：-RequirePermission-注解怎么找到-该由哪个-Checker-判-？为什么-6-个-Checker-里有一个永远是死的？"><a href="#图-4｜这张图回答：-RequirePermission-注解怎么找到-该由哪个-Checker-判-？为什么-6-个-Checker-里有一个永远是死的？" class="headerlink" title="图 4｜这张图回答：@RequirePermission 注解怎么找到&quot;该由哪个 Checker 判&quot;？为什么 6 个 Checker 里有一个永远是死的？"></a>图 4｜这张图回答：<code>@RequirePermission</code> 注解怎么找到&quot;该由哪个 Checker 判&quot;？为什么 6 个 Checker 里有一个永远是死的？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    Anno["@RequirePermission(resource, action,
+resourceIdParamName, relatedResourceIdParamName)"]
+    A["PermissionAspect.checkPermission
+@Around 拦截 · UserContext 取 userId
+反射按参数名抽 resourceId / relatedId
+支持 dto.circleId 点号取字段"]
     P["PermissionContext
-注入 List 再自建 EnumMap
-key 自己说了算"]
-    CK1["CirclePermissionChecker"]
-    CK2["PostPermissionChecker"]
+注入 List PermissionChecker
+@PostConstruct 自建 EnumMap 路由表
+key 由 checker.supportResourceType 自己声明"]
+    CK1["CirclePermissionChecker
+checkCreate 恒真 / checkLeave 成员且非圈主
+checkOwner 判 role=1"]
+    CK2["PostPermissionChecker
+checkDelete 先判作者本人再看圈主"]
     CK3["CommentPermissionChecker"]
     CK4["SectionPermissionChecker"]
     CK5["AnnouncementPermissionChecker"]
     CK6["FilePermissionChecker
-注册了, 但永远收不到请求, 死代码"]
-    FC["fail-closed: 查不到 checker 直接拒绝"]
+逻辑写对了（比较 file.userId）
+但全仓无一处 @RequirePermission(FILE)
+→ 注册了也永远收不到请求 · 死代码"]
+    FC["checker == null → return false
+fail-closed：查不到就拒"]
+    DENY["PermissionDeniedException → 403"]
 
-    C --> A --> P
+    Anno --> A --> P
     P --> CK1
     P --> CK2
     P --> CK3
     P --> CK4
     P --> CK5
-    P --> CK6
-    P --> FC
+    P -.->|路由表里有 FILE 格
+但没有请求投进来| CK6
+    P -->|类型查不到| FC
+    FC --> DENY
 </pre></div>
 
-<p>为什么注入 List 不注入 Map：吃过亏。通知系统那次 <code>Map&lt;String, Handler&gt;</code> 注入，key 是 Bean 名不是我给的业务类型码，路由全线失效还不报错。现在这张图这么画，就是那次先撞过。</p>
-<p>FilePermissionChecker 为什么是死的：<code>deleteFile</code> 的注解把资源类型写成了 POST，请求全被路由到 PostPermissionChecker，拿文件 id 去帖子表查归属，谁的帖子 id 恰好撞上文件 id 谁就能删别人的文件。注册表里的格子存在，不等于有请求走得到。</p>
-<h1 id="5-多级缓存读路径"><a href="#5-多级缓存读路径" class="headerlink" title="5. 多级缓存读路径"></a>5. 多级缓存读路径</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    Start["MultiLevelCache.get"]
-    BY{"cache.bypass 开关?"}
-    L1["L1 Caffeine"]
+<h3 id="逐节点说明：为什么注入-List-而不是-Map"><a href="#逐节点说明：为什么注入-List-而不是-Map" class="headerlink" title="逐节点说明：为什么注入 List 而不是 Map"></a>逐节点说明：为什么注入 List 而不是 Map</h3><p><code>PermissionContext</code> 全文 81 行，核心就两段。收集（<code>permission/PermissionContext.java:40-57</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> List&lt;PermissionChecker&gt; permissionCheckers;</span><br><span class="line"></span><br><span class="line"><span class="meta">@PostConstruct</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (PermissionChecker checker : permissionCheckers) &#123;</span><br><span class="line">        <span class="type">ResourceType</span> <span class="variable">resourceType</span> <span class="operator">=</span> checker.supportResourceType();</span><br><span class="line">        checkerMap.put(resourceType, checker);</span><br><span class="line">        log.info(<span class="string">&quot;注册权限检查器: &#123;&#125; → &#123;&#125;&quot;</span>, resourceType, checker.getClass().getSimpleName());</span><br><span class="line">    &#125;</span><br><span class="line">    log.info(<span class="string">&quot;权限检查器注册完成，共 &#123;&#125; 个&quot;</span>, checkerMap.size());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查表（同文件 73-80）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">check</span><span class="params">(Long userId, ResourceType resourceType, Long resourceId, Long relatedId, PermissionType action)</span> &#123;</span><br><span class="line">    <span class="type">PermissionChecker</span> <span class="variable">checker</span> <span class="operator">=</span> checkerMap.get(resourceType);</span><br><span class="line">    <span class="keyword">if</span> (checker == <span class="literal">null</span>) &#123;</span><br><span class="line">        log.error(<span class="string">&quot;未找到资源类型 &#123;&#125; 的权限检查器&quot;</span>, resourceType);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> checker.check(userId, resourceId, relatedId, action);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果当初写成 <code>@Autowired Map&lt;ResourceType, PermissionChecker&gt;</code>，Spring 的 Map 注入 key 是 <strong>Bean 名字符串</strong>，类型都对不上，路由会全线静默失效——这正是通知系统踩过的同款坑（<code>Map&lt;String, Handler&gt;</code> 注入 key 是 Bean 名，图6 会再讲一次）。现在的写法是&quot;框架的 Map 注入不要，自己用 <code>@PostConstruct</code> 建&quot;：key 由每个 Checker 用自己的 <code>supportResourceType()</code> 声明，路由表每个格子，都是实现类自己举手报的名，中枢一个 if-else 都没有。<code>checkerMap</code> 用 <code>EnumMap</code>（第 35 行）：枚举 key 内部按 <code>ordinal()</code> 落数组，域13-② <code>278</code> 行的账——&quot;路由表只有 6 个槽位，用数组最合适&quot;。</p>
+<h4 id="切面侧怎么取参"><a href="#切面侧怎么取参" class="headerlink" title="切面侧怎么取参"></a>切面侧怎么取参</h4><p><code>aspect/PermissionAspect.java:56-89</code>，节选：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Around(&quot;@annotation(requirePermission)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">checkPermission</span><span class="params">(ProceedingJoinPoint joinPoint, RequirePermission requirePermission)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">    <span class="type">Long</span> <span class="variable">userId</span> <span class="operator">=</span> UserContext.getCurrentUserId();</span><br><span class="line">    <span class="keyword">if</span> (userId == <span class="literal">null</span>) &#123;</span><br><span class="line">        log.warn(<span class="string">&quot;权限校验失败：用户未认证&quot;</span>);</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BusinessException</span>(ErrorCode.UNAUTHORIZED);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">ResourceType</span> <span class="variable">resource</span> <span class="operator">=</span> requirePermission.resource();</span><br><span class="line">    <span class="type">PermissionType</span> <span class="variable">action</span> <span class="operator">=</span> requirePermission.action();</span><br><span class="line">    <span class="type">String</span> <span class="variable">resourceIdParamName</span> <span class="operator">=</span> requirePermission.resourceIdParamName();</span><br><span class="line">    <span class="type">String</span> <span class="variable">relatedResourceIdParamName</span> <span class="operator">=</span> requirePermission.relatedResourceIdParamName();</span><br><span class="line"></span><br><span class="line">    <span class="type">Long</span> <span class="variable">resourceId</span> <span class="operator">=</span> extractResourceId(joinPoint, resourceIdParamName);</span><br><span class="line">    <span class="type">Long</span> <span class="variable">relatedId</span> <span class="operator">=</span> extractRelatedResourceId(joinPoint, relatedResourceIdParamName);</span><br><span class="line"></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">hasPermission</span> <span class="operator">=</span> permissionContext.check(userId, resource, resourceId, relatedId, action);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!hasPermission) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">PermissionDeniedException</span>(<span class="string">&quot;权限不足: &quot;</span> + ...);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>参数名能对上，靠的是根 <code>pom.xml:96-98</code> 编译参数里的 <code>-parameters</code>（保留方法形参名进字节码）；<code>relatedResourceIdParamName</code> 还支持 <code>dto.circleId</code> 这种点号写法，切面反射进 DTO 对象取字段（<code>PermissionAspect.java:133-155</code>）。这也脆：哪天编译把 <code>-parameters</code> 弄丢了，按参数名提取那一套全变 null。</p>
+<h3 id="死代码-FilePermissionChecker：注册了，但永远收不到请求"><a href="#死代码-FilePermissionChecker：注册了，但永远收不到请求" class="headerlink" title="死代码 FilePermissionChecker：注册了，但永远收不到请求"></a>死代码 FilePermissionChecker：注册了，但永远收不到请求</h3><p>它在 <code>permission/FilePermissionChecker.java</code> 一共 45 行，逻辑其实是对的（第 32-38 行：<code>uploadFileMapper.selectById(resourceId)</code> 后比较 <code>userId.equals(file.getUserId())</code>），<code>supportResourceType()</code> 返回 <code>ResourceType.FILE</code>，启动时也确实注册进了路由表。但域13-② <code>436</code> 行核实：*&quot;全仓库 <code>ResourceType.FILE</code> 只在这一个文件里出现——没有任何 Controller 写 <code>@RequirePermission(resource = ResourceType.FILE)</code>&quot;*。更糟的是文件删除接口实际这么标的（<code>controller/FileController.java:101-104</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@DeleteMapping(&quot;/&#123;fileId&#125;&quot;)</span></span><br><span class="line"><span class="meta">@RequirePermission(resource = ResourceType.POST, action = PermissionType.DELETE, resourceIdParamName = &quot;fileId&quot;)</span></span><br><span class="line"><span class="keyword">public</span> Result&lt;Void&gt; <span class="title function_">deleteFile</span><span class="params">(<span class="meta">@PathVariable</span> Long fileId)</span> &#123;</span><br><span class="line">    fileStorageService.deleteFile(fileId);</span><br></pre></td></tr></table></figure>
+
+<p>资源类型写成了 <strong>POST</strong>、参数名却是 fileId。后果链条：注解声明资源类型 POST → 路由到 <code>PostPermissionChecker</code> → 拿 <strong>fileId 当 postId</strong> 去帖子表查归属 → 谁的帖子 id 恰好撞上某个文件的 id，谁就能删别人的文件。域13-② <code>449</code> 行原话：*&quot;如果 A 正好是帖子 N 的作者 → 判定通过，删掉的是 B 上传的文件（水平越权，真实可达）&quot;*。注册表里有格子，不等于真有请求能走到那儿。格子配错了，比压根没格子还危险。</p>
+<h3 id="权限系统的种子数据坑"><a href="#权限系统的种子数据坑" class="headerlink" title="权限系统的种子数据坑"></a>权限系统的种子数据坑</h3><p><code>CirclePermissionChecker.isOwner</code> 的判定依赖 <code>role = 1</code>（0&#x3D;普通成员、1&#x3D;圈主，见 <code>permission/CirclePermissionChecker.java:104-106</code> 注释与实现）。域13-④SQL <code>127</code> 行数过种子库：<code>t_circle_member</code> 的 INSERT 共 36 行，<code>role = 0</code> 26 行、<code>role = 2</code> 10 行——**<code>role = 1</code> 零行**。也就是说演示库里没有一个圈主，所有圈主分支在演示数据下永远不被触发。域13 另记一笔账：<code>role=1</code> 这个魔法值散在 4 处判定 + 两种硬编码（域13-① <code>2120</code>），&quot;圈主&quot;这个语义一变，四个地方都得跟着改，漏一个就有一半接口判错。</p>
+<h3 id="这一层的真实接线状态-3"><a href="#这一层的真实接线状态-3" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>Checker</th>
+<th>supportResourceType</th>
+<th>接线判定</th>
+<th>触发它的真实入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CirclePermissionChecker</td>
+<td>CIRCLE</td>
+<td>live</td>
+<td>圈子管理&#x2F;踢人&#x2F;解散类接口的注解</td>
+</tr>
+<tr>
+<td>PostPermissionChecker</td>
+<td>POST</td>
+<td>live</td>
+<td>帖子删除&#x2F;置顶；<strong>还错误地接住了文件删除</strong>（注解错位）</td>
+</tr>
+<tr>
+<td>CommentPermissionChecker</td>
+<td>COMMENT</td>
+<td>live</td>
+<td>评论删除&#x2F;管理</td>
+</tr>
+<tr>
+<td>SectionPermissionChecker</td>
+<td>SECTION</td>
+<td>live</td>
+<td>分区维护</td>
+</tr>
+<tr>
+<td>AnnouncementPermissionChecker</td>
+<td>ANNOUNCEMENT</td>
+<td>live</td>
+<td>公告发布&#x2F;置顶</td>
+</tr>
+<tr>
+<td>FilePermissionChecker</td>
+<td>FILE</td>
+<td><strong>dead（不可达）</strong></td>
+<td>0 处注解投递；域13-② 坑4 判定&quot;功能正确但不可达&quot;</td>
+</tr>
+<tr>
+<td>PermissionContext 兜底</td>
+<td>—</td>
+<td>live</td>
+<td>查不到 Checker → false（fail-closed）</td>
+</tr>
+</tbody></table>
+<h3 id="关键源码：EnumMap-声明（PermissionContext-java-35）"><a href="#关键源码：EnumMap-声明（PermissionContext-java-35）" class="headerlink" title="关键源码：EnumMap 声明（PermissionContext.java:35）"></a>关键源码：EnumMap 声明（<code>PermissionContext.java:35</code>）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ResourceType, PermissionChecker&gt; checkerMap = <span class="keyword">new</span> <span class="title class_">EnumMap</span>&lt;&gt;(ResourceType.class);</span><br></pre></td></tr></table></figure>
+
+<p>以及切面提取关联 id 的点号反射（<code>PermissionAspect.java:134-144</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (paramName.contains(<span class="string">&quot;.&quot;</span>)) &#123;</span><br><span class="line">    String[] parts = paramName.split(<span class="string">&quot;\\.&quot;</span>);</span><br><span class="line">    <span class="type">String</span> <span class="variable">objectParamName</span> <span class="operator">=</span> parts[<span class="number">0</span>];</span><br><span class="line">    <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> parts[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; parameters.length; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (parameters[i].getName().equals(objectParamName)) &#123;</span><br><span class="line">            <span class="keyword">return</span> extractFieldFromObject(args[i], fieldName);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="图-5｜这张图回答：帖子详情-P99-从-274ms-降到-6ms-是读哪条路径读出来的？三个防都防住了吗？"><a href="#图-5｜这张图回答：帖子详情-P99-从-274ms-降到-6ms-是读哪条路径读出来的？三个防都防住了吗？" class="headerlink" title="图 5｜这张图回答：帖子详情 P99 从 274ms 降到 6ms 是读哪条路径读出来的？三个防都防住了吗？"></a>图 5｜这张图回答：帖子详情 P99 从 274ms 降到 6ms 是读哪条路径读出来的？三个防都防住了吗？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    Start["MultiLevelCache.get(redisKey, type, dbLoader, config)"]
+    BY{"cache.bypass=true?
+压测 A/B 旁路开关"}
+    L1["L1 Caffeine
+localCache 或 hotLocalCache
+按 config.level 分池"]
     L1H{"命中?"}
-    L2["L2 Redis"]
+    L2["L2 Redis
+redisTemplate.opsForValue().get"]
     L2H{"命中?"}
-    NP{"NULL 占位符?"}
-    Lock["SETNX 抢锁, 值写死 1"]
-    LS{"抢到?"}
-    Wait["睡 50ms 回查 L2
-还没有就自己查库"]
-    L3["查 MySQL"]
-    Has{"有值?"}
+    NP{"值等于 NULL 占位符?"}
+    Lock{"config.preventBreakdown?
+是 → SETNX cache:lock:key
+值写死字符串 1 · TTL 10s"}
+    LS{"抢到锁?"}
+    Wait["没抢到：睡 50ms 回查 L2
+还没有 → 自己去查库（尽力而为，非严格单飞）"]
+    Double["抢到：锁内双重检查 L2
+命中直接用 · 仍空才回源"]
+    L3["dbLoader.get() 查 MySQL"]
+    Has{"结果为 null?"}
     PutNull["Redis 写 NULL 占位
-TTL 取原 TTL 的一成, 下限 10 秒"]
-    Put["写 Redis 加 jitter, 回写 L1"]
-    Rel["releaseLock: 裸 delete
-没有 token 没有校验, 可能删别人的锁"]
+TTL = max(10s, 原TTL的10%)
+防穿透"]
+    Put["Redis 写值 + jitter 抖动
+回写 L1 · 防雪崩"]
+    Rel["finally releaseLock
+= 裸 stringRedisTemplate.delete(lockKey)
+无 token 无 Lua 不校验持有者"]
 
     Start --> BY
-    BY -->|true 直查库| L3
+    BY -->|true 直查库不读不写缓存| L3
     BY -->|false| L1
     L1 --> L1H
-    L1H -->|hit 返回| R1["返回"]
-    L1H -->|miss| L2
+    L1H -->|hit| R1["返回 · recordL1Hit"]
+    L1H -->|miss 或类型不匹配| L2
     L2 --> L2H
-    L2H -->|hit| RB["回写 L1 返回"]
-    L2H -->|miss| NP
-    NP -->|是 返回 null| R2["返回 null"]
-    NP -->|否| Lock
+    L2H -->|hit 回写 L1| RB["返回 · recordL2Hit"]
+    L2H -->|hit NULL| R2["回写 L1 占位 · 返回 null"]
+    L2H -->|miss| Lock
+    Lock -->|preventBreakdown=false| L3
     Lock --> LS
     LS -->|失败| Wait
-    LS -->|成功 锁内双重检查再回源| L3
+    LS -->|成功| Double
+    Double --> L3
     L3 --> Has
     Has -->|null| PutNull
     Has -->|有值| Put
@@ -339,120 +862,754 @@ TTL 取原 TTL 的一成, 下限 10 秒"]
     PutNull --> Rel
 </pre></div>
 
-<p>三个防是真的：空值占位防穿透，锁防击穿，jitter 防雪崩。但 L1 不吃传入 TTL（所有 L1 条目用同一个过期），锁释放不校验持有者，这两个洞都在。100 RPS 下 P99 274ms 对 6ms、回源 6267 对 3，是本机同机 A&#x2F;B 测的，数字在 <code>evidence-pack/SUMMARY.md</code>。</p>
-<h1 id="6-通知，门面加策略加双通道"><a href="#6-通知，门面加策略加双通道" class="headerlink" title="6. 通知，门面加策略加双通道"></a>6. 通知，门面加策略加双通道</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    B["业务 Service"]
-    E["事务提交后事件
-TransactionalEventListener AFTER_COMMIT"]
-    Pub["NotificationPublisherImpl
-PostConstruct 按 getSupportedTypes 自建路由表
-修好后长这样, 之前用 Map 注入全瞎"]
-    H1["InteractionHandler
-post_comment post_like 等"]
-    H2["CircleHandler
-circle_join kick disband"]
-    H3["AnnouncementHandler"]
-    H4["MessageHandler"]
-    H5["SystemHandler 兜底"]
-    Ch1["DatabasePushChannel 落库"]
-    Ch2["WebSocketPushChannel 在线推"]
-    F["前端角标, 离线下次拉"]
+<h3 id="逐节点说明：真实类与真实行号"><a href="#逐节点说明：真实类与真实行号" class="headerlink" title="逐节点说明：真实类与真实行号"></a>逐节点说明：真实类与真实行号</h3><p>整张图就是 <code>api/src/main/java/com/zhiyuanflow/cache/core/MultiLevelCache.java</code>（419 行）一个类的控制流，逐段对：</p>
+<ul>
+<li><strong>入口与旁路开关</strong>（56-90 行）：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 压测 A/B 旁路：true 跳过 L1/L2 直查 DB，同一 jar 切换唯一变量 */</span></span><br><span class="line"><span class="meta">@Value(&quot;$&#123;cache.bypass:false&#125;&quot;)</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> cacheBypass;</span><br><span class="line">...</span><br><span class="line">    <span class="keyword">if</span> (cacheBypass) &#123;</span><br><span class="line">        <span class="type">T</span> <span class="variable">data</span> <span class="operator">=</span> dbLoader.get();</span><br><span class="line">        <span class="keyword">if</span> (cacheMonitor != <span class="literal">null</span>) &#123;</span><br><span class="line">            cacheMonitor.recordDbQuery(System.currentTimeMillis() - startTime, redisKey);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-    B --> E --> Pub
+<p>这个开关撑起了压测那套做法：同一个 jar、同一个数据集，只翻 <code>CACHE_BYPASS</code> 环境变量（<code>application.yml:91</code>），A&#x2F;B 两组之间就不存在&quot;代码不同&quot;这个混杂因素了。<code>evidence-pack/SUMMARY.md</code> 开头声明的方法论就是这套。</p>
+<ul>
+<li><strong>L1 分池</strong>（360-393 行）：<code>config.level == HOT</code> 走 <code>hotLocalCache</code>（容量 50000、10 分钟，<code>application.yml:96-98</code>），普通走 <code>localCache</code>（10000、5 分钟，93-95 行），<code>SESSION</code> 级直接跳过 L1。帖子详情用 <code>CacheConfig.hotConfig(1800)</code>（<code>cache/manager/PostCacheManager.java:46-52</code>）：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> PostVO <span class="title function_">getPostDetail</span><span class="params">(Long postId)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">key</span> <span class="operator">=</span> CacheKeyConstants.postDetailKey(postId);</span><br><span class="line">    <span class="type">CacheConfig</span> <span class="variable">config</span> <span class="operator">=</span> CacheConfig.hotConfig(<span class="number">1800</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> cacheService.get(key, PostVO.class,</span><br><span class="line">            () -&gt; postMapper.getPostDataV3(postId, <span class="literal">null</span>),</span><br><span class="line">            config);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>L2 与 NULL 占位</strong>（112-131 行）：Redis 值等于字符串 <code>&quot;NULL&quot;</code>（常量 <code>NULL_PLACEHOLDER</code>，61 行）视为&quot;查过、确实没有&quot;，回写 L1 后直接返回 null。</li>
+<li><strong>SETNX 锁与等待方</strong>（158-213 行）：<code>tryAcquireLock</code> 是 <code>setIfAbsent(lockKey, &quot;1&quot;, 10, TimeUnit.SECONDS)</code>（209-213 行）——锁值写死 <code>&quot;1&quot;</code>，不含持有者身份。没抢到锁的请求睡 50ms 再查 L2，<strong>还查不到就自己去查库</strong>（180-183 行），所以这不是严格 single-flight，是&quot;尽力而为&quot;：绝大多数并发被压掉，极端时序下仍会有第二发打到 DB。</li>
+<li><strong>锁释放（必须说实话的格子）</strong>（218-220 行）：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">releaseLock</span><span class="params">(String lockKey)</span> &#123;</span><br><span class="line">    stringRedisTemplate.delete(lockKey);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没有 Lua，没有 token。&quot;是我的锁才删&quot;这种校验，根本就没写。完整风险时序在域12-② <code>410</code> 行：A 拿锁 → 回源慢过 10 秒 → 锁自动过期 → B 拿到新锁 → A 查完在 finally 里把 <strong>B 的锁</strong>删了。标准解法（值放 UUID + Lua 比对再删）本项目没做；手记同时指出 <code>CacheService</code> 里其实有现成的 Lua 执行方法，只是没接到锁上。为什么实践中难撞上：锁 TTL 10 秒、回源毫秒级（域12-③ <code>113</code> 行原话&quot;这是一个真实的简化，不是完备的分布式锁&quot;）。</p>
+<ul>
+<li><strong>防穿透的空值 TTL</strong>（233-238 行）：<code>Math.max(10, (long)(config.getExpireSeconds() * 0.1))</code>——原 TTL 的一成、下限 10 秒。</li>
+<li><strong>防雪崩 jitter</strong>（410-418 行）：<code>1.0 - ratio + random*ratio*2</code> 的乘性抖动，hotConfig 的 ratio 是 0.2。</li>
+<li><strong>没画进图里的两条洞</strong>：① <strong>L1 不吃传入 TTL</strong>——<code>hotConfig(1800)</code> 传了 30 分钟，但 L1 条目用的是 Caffeine 全局 <code>expireAfterWrite</code>（yml 里 5&#x2F;10 分钟），Redis 里 30 分钟、本机 L1 10 分钟，<strong>同一 key 两层生命周期不一致</strong>（00-README 域12 行&quot;L1 不吃传入 TTL 的双层不一致&quot;）；② <strong>延迟双删三重未接线</strong>——<code>deleteWithDelay</code> 方法写了（287-306 行，含 <code>TransactionSynchronization.afterCommit</code> 挂接），但它的开关 <code>delayedDoubleDelete(true)</code> 只有 <code>delayedDeleteConfig</code> 工厂会打开，而 <code>delayedDeleteConfig</code> 全仓 0 调用点（域12-② <code>462</code>、<code>818</code> 行：&quot;没人调方法 + 没人开开关 + 没人造那个配置&quot;）。所以现在写路径的实际兜底只有 TTL 到点。</li>
+</ul>
+<h3 id="这一层的真实接线状态（CacheConfig-工厂视角，域12-②-451-462-表转抄）"><a href="#这一层的真实接线状态（CacheConfig-工厂视角，域12-②-451-462-表转抄）" class="headerlink" title="这一层的真实接线状态（CacheConfig 工厂视角，域12-② 451-462 表转抄）"></a>这一层的真实接线状态（CacheConfig 工厂视角，域12-② 451-462 表转抄）</h3><table>
+<thead>
+<tr>
+<th>工厂方法</th>
+<th>L1 池</th>
+<th>防击穿</th>
+<th>谁在真实调用</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>hotConfig(1800)</td>
+<td>hotLocalCache</td>
+<td>是</td>
+<td>PostCacheManager.getPostDetail&#x2F;evict、CircleCacheManager.getCircleBase、CacheWarmup</td>
+<td><strong>live</strong></td>
+</tr>
+<tr>
+<td>businessConfig(1800)</td>
+<td>localCache</td>
+<td>否</td>
+<td>UserCacheManager.getUserBase&#x2F;getProfile、CircleCacheManager 成员关系缓存</td>
+<td><strong>live</strong></td>
+</tr>
+<tr>
+<td>sessionConfig</td>
+<td>跳过 L1</td>
+<td>—</td>
+<td>只被死方法引用</td>
+<td>unused</td>
+</tr>
+<tr>
+<td>dataConfig</td>
+<td>—</td>
+<td>—</td>
+<td>只被死方法引用</td>
+<td>unused</td>
+</tr>
+<tr>
+<td>delayedDeleteConfig</td>
+<td>—</td>
+<td>—</td>
+<td><strong>0 调用点</strong></td>
+<td>dead 配置的源头</td>
+</tr>
+<tr>
+<td>cache.bypass</td>
+<td>—</td>
+<td>—</td>
+<td>压测期翻转过（<code>SUMMARY.md</code> 方法论）</td>
+<td>live（运维开关）</td>
+</tr>
+<tr>
+<td>MultiLevelCache.deleteWithDelay</td>
+<td>—</td>
+<td>—</td>
+<td>上游 0 业务调用（域12-② <code>954-955</code> 行：<code>CacheService</code> 的转发层在，业务没人调）</td>
+<td>unused</td>
+</tr>
+<tr>
+<td>releaseLock 的持有者校验</td>
+<td>—</td>
+<td>—</td>
+<td>不存在该实现</td>
+<td><strong>缺陷如实记录</strong></td>
+</tr>
+</tbody></table>
+<h3 id="量化结果：只引用压测包里有的数字"><a href="#量化结果：只引用压测包里有的数字" class="headerlink" title="量化结果：只引用压测包里有的数字"></a>量化结果：只引用压测包里有的数字</h3><p><code>evidence-pack/SUMMARY.md</code> §1（接口 <code>GET /api/posts/&#123;postId&#125;</code>，同机 A&#x2F;B，每档 3 轮取中位）：</p>
+<table>
+<thead>
+<tr>
+<th>RPS</th>
+<th>指标</th>
+<th>baseline（bypass&#x3D;true 直查库）</th>
+<th>fixed（三级缓存）</th>
+<th>变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>P99</td>
+<td><strong>274 ms</strong></td>
+<td><strong>6 ms</strong></td>
+<td>-97.8%</td>
+</tr>
+<tr>
+<td>100</td>
+<td>dbQuery&#x2F;轮</td>
+<td><strong>6267</strong></td>
+<td><strong>3</strong></td>
+<td>-99.95%</td>
+</tr>
+<tr>
+<td>200</td>
+<td>P99</td>
+<td><strong>284 ms</strong></td>
+<td><strong>19 ms</strong></td>
+<td>-93.3%</td>
+</tr>
+<tr>
+<td>200</td>
+<td>dbQuery&#x2F;轮</td>
+<td><strong>12307</strong></td>
+<td><strong>30</strong></td>
+<td>-99.8%</td>
+</tr>
+<tr>
+<td>全档</td>
+<td>错误</td>
+<td>0</td>
+<td>0</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>明细在 <code>evidence-pack/matrix_post_median.csv</code>（表头 <code>&quot;Mode&quot;,&quot;Rps&quot;,&quot;QPS&quot;,&quot;P50&quot;,&quot;P95&quot;,&quot;P99&quot;,&quot;DbQ&quot;,&quot;ComDelta&quot;,&quot;HitRate&quot;,&quot;Err&quot;</code>，fixed 档 100RPS 行：P50&#x3D;4、P95&#x3D;5、P99&#x3D;6、DbQ&#x3D;3、Err&#x3D;0）。<code>SUMMARY.md</code> 在同一段落里还明写了两条表述禁令：一条关于吞吐增幅类说法，一条关于把本机实验数据说成线上表现的说法——本文全程遵守。另外环境行还有一句必须带上：*&quot;应用+MySQL+Redis+JMeter 同机（绝对 QPS 不外推）&quot;*。</p>
+<p>对照组顺带一提评论列表 SQL：<code>evidence-pack/fresh_explain_comment.txt</code> 实测联合索引 <code>idx_post_create(post_id, create_time)</code> 命中时 <code>type=ref, rows≈50, Extra=NULL（无 filesort）</code>，<code>FORCE INDEX(idx_post_id)</code> 时同一查询 <code>Extra=Using filesort</code>，无前缀条件模糊查 <code>type=ALL, rows≈397293</code>；接口 RT P50 25ms &#x2F; P95 35ms（<code>SUMMARY.md</code> §4）。</p>
+<hr>
+<h2 id="图-6｜这张图回答：一条-有人评论了你-的通知，从业务代码走到红点要走哪几步？路由修好之后-send-里还剩什么洞？"><a href="#图-6｜这张图回答：一条-有人评论了你-的通知，从业务代码走到红点要走哪几步？路由修好之后-send-里还剩什么洞？" class="headerlink" title="图 6｜这张图回答：一条&quot;有人评论了你&quot;的通知，从业务代码走到红点要走哪几步？路由修好之后 send() 里还剩什么洞？"></a>图 6｜这张图回答：一条&quot;有人评论了你&quot;的通知，从业务代码走到红点要走哪几步？路由修好之后 send() 里还剩什么洞？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    B1["CommentServiceImpl.sendAndPush"]
+    B2["PostInteractionServiceImpl.sendAndPush"]
+    B3["CircleServiceImpl.sendAndPush"]
+    B4["ChatWebSocketHandler.sendAndPush"]
+    MQC["PostNotificationConsumer / CommentNotificationConsumer
+调 send 且构造 DTO 没带 receiverId
+MQ 打开时进入必抛 IllegalArgumentException"]
+    Pub["NotificationPublisherImpl（门面）
+@PostConstruct 按 getSupportedTypes 自建
+type 字符串 → Handler 路由表"]
+    H1["InteractionNotificationHandler
+post_comment post_like post_pull
+comment_like comment_pull comment_reply"]
+    H2["CircleNotificationHandler
+circle_join 等"]
+    H3["AnnouncementNotificationHandler
+circle_announcement · 无生产方 → orphan"]
+    H4["MessageNotificationHandler
+private_message"]
+    H5["SystemNotificationHandler
+system · 兜底 defaultHandler"]
+    Ch1["DatabasePushChannel
+notificationMapper.insert 落库"]
+    Ch2["WebSocketPushChannel
+isOnline 才推 · 离线跳过"]
+    Loop["send() 循环体：逐人 try
+通道内层再 try：channel.push 抛异常
+只打日志 · successCount 照样 +1"]
+    F["前端角标 · 离线用户下次拉取"]
+
+    B1 --> Pub
+    B2 --> Pub
+    B3 --> Pub
+    B4 --> Pub
+    MQC --> Pub
     Pub --> H1
     Pub --> H2
-    Pub --> H3
+    Pub -.->|没人投这个类型| H3
     Pub --> H4
     Pub --> H5
-    H1 --> Ch1
-    H1 --> Ch2
+    H1 --> Loop
+    Loop --> Ch1
+    Loop --> Ch2
     Ch1 --> F
     Ch2 --> F
 </pre></div>
 
-<p>路由修好了，<code>send()</code> 里还有洞：循环里逐人 try，通道推失败日志打了，successCount 照样加一。数字会说谎，日志才是事实源。</p>
-<h1 id="7-AI-纵队"><a href="#7-AI-纵队" class="headerlink" title="7. AI 纵队"></a>7. AI 纵队</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    In["POST api/ai/chat 走路由
-POST api/ai/companion/stream 走 SSE
-POST api/ai/discover 走发现"]
-    R["AgentRouter
-LLM 选路加关键词兜底
-8 个 AgentType, 真接线的 handler 只有 3 个"]
-    K["客服: customerServiceAgent"]
-    Q["知识库: FAQ 内存向量库
-maxResults 3, minScore 0.7"]
-    Cp["情绪陪伴: 危机词闸加滑窗加摘要
-SSE 真流式"]
-    Ci["圈子助手: 只带当前圈上下文"]
-    Dc["内容发现: 意图解析 混合召回 重排"]
-    Au["内容审核: 规则加 AI 落审计表
-后端旁路, 无用户入口"]
-    FB["熔断加降级
-坑: 降级响应 success 是 true
-把自己的熔断计数清零"]
+<h3 id="逐节点说明：触发方式与-没有-AFTER-COMMIT-的真话"><a href="#逐节点说明：触发方式与-没有-AFTER-COMMIT-的真话" class="headerlink" title="逐节点说明：触发方式与&quot;没有 AFTER_COMMIT&quot;的真话"></a>逐节点说明：触发方式与&quot;没有 AFTER_COMMIT&quot;的真话</h3><p>有个事实很容易讲错，先钉在这儿：图6 的入口是<strong>业务 Service 同步直调</strong>。全仓 grep <code>@TransactionalEventListener</code> <strong>0 命中</strong>（我复核过），通知不挂在任何&quot;事务提交后事件&quot;上。域09-⑥ <code>863</code> 行的判定直接引用：*&quot;4 个生产方全在 <code>@Transactional</code> 内；<code>@TransactionalEventListener</code> 全仓 0 命中&quot;*。后果：业务事务还没提交，通知已经落了库——事务回滚时会出现&quot;通知说有人评论你、评论其实没存在过&quot;的<strong>幽灵通知</strong>。为什么现在没炸？因为评论&#x2F;点赞路径回滚概率低、且通知失败不回滚业务（异常被吞）。手记给的三级处置是：短期接受并知会、中期上 <code>AFTER_COMMIT</code>、长期 outbox（域09-⑥）。</p>
+<p>同仓还有另外半边的情况，顺便说一下：AFTER_COMMIT 这个机制在本项目<strong>并非没人知道</strong>——<code>MultiLevelCache.deleteWithDelay</code> 和 <code>afterCommit</code> 用的是 <code>TransactionSynchronizationManager.registerSynchronization</code>（图5 讲过、同样未接线），帖子域的 <code>PostEmotionSideEffectEvent</code> 走 <code>@EventListener</code> 同步同事务（<code>emotion/service/EmotionSideEffectService.java:86-87</code>，注释明写&quot;与调用方同一事务，失败则回滚主流程&quot;——情绪副作用选了<strong>连坐</strong>，通知选了<strong>吞掉</strong>，同一仓库对&quot;副作用要不要和主业务一起死&quot;给了两个相反答案，这是域09-⑥ <code>205</code> 行点名的对照样本）。</p>
+<h4 id="门面的路由表"><a href="#门面的路由表" class="headerlink" title="门面的路由表"></a>门面的路由表</h4><p><code>notification/NotificationPublisherImpl.java:66-92</code>，节选：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostConstruct</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">()</span> &#123;</span><br><span class="line">    typeToHandlerMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (NotificationHandler handler : handlers) &#123;</span><br><span class="line">        List&lt;String&gt; supportedTypes = handler.getSupportedTypes();</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">for</span> (String type : supportedTypes) &#123;</span><br><span class="line">            <span class="type">NotificationHandler</span> <span class="variable">existing</span> <span class="operator">=</span> typeToHandlerMap.put(type, handler);</span><br><span class="line">            <span class="keyword">if</span> (existing != <span class="literal">null</span>) &#123;</span><br><span class="line">                log.warn(<span class="string">&quot;通知类型 &#123;&#125; 被多个 Handler 注册：&#123;&#125; → &#123;&#125;，后者覆盖前者&quot;</span>, ...);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (defaultHandler == <span class="literal">null</span> &amp;&amp; handler.supports(<span class="string">&quot;system&quot;</span>)) &#123;</span><br><span class="line">            defaultHandler = handler;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-    In --> R
-    R --> K
-    R --> Q
-    R --> Cp
-    R --> Ci
-    R --> Dc
-    R --> Au
-    K --> FB
-    Cp --> FB
+<p>和 PermissionContext 同款思路：注入 <code>List&lt;NotificationHandler&gt;</code>、启动时按各自声明的 <code>getSupportedTypes()</code> 建表。<code>@Autowired Map&lt;String, NotificationHandler&gt;</code> 没用过，Spring 那个 Map 注入 key 是 <strong>Bean 名</strong>（<code>interactionNotificationHandler</code> 这种），压根不是业务类型码（<code>post_comment</code>），查表永远 miss、又不报错——域17 行明载这是&quot;路由失明事故&quot;，现在两处路由都改成了自建表。类型码→Handler 的归属抄一个实物（<code>notification/handler/InteractionNotificationHandler.java:30-39</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> List&lt;String&gt; <span class="title function_">getSupportedTypes</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> List.of(</span><br><span class="line">            <span class="string">&quot;post_comment&quot;</span>,</span><br><span class="line">            <span class="string">&quot;post_like&quot;</span>,</span><br><span class="line">            <span class="string">&quot;post_pull&quot;</span>,</span><br><span class="line">            <span class="string">&quot;comment_like&quot;</span>,</span><br><span class="line">            <span class="string">&quot;comment_pull&quot;</span>,</span><br><span class="line">            <span class="string">&quot;comment_reply&quot;</span></span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="send-循环的洞"><a href="#send-循环的洞" class="headerlink" title="send() 循环的洞"></a>send() 循环的洞</h4><p><code>NotificationPublisherImpl.java:127-171</code>，节选：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (Long receiverId : receiverIds) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">for</span> (PushChannel channel : pushChannels) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                channel.push(receiverId, notification);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;通知推送失败：channel=&#123;&#125;, receiverId=&#123;&#125;&quot;</span>,</span><br><span class="line">                        channel.getClass().getSimpleName(), receiverId, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        successCount++;</span><br></pre></td></tr></table></figure>
+
+<p>通道层 <code>catch</code> 打完日志就完，循环继续，<code>successCount++</code> 无条件执行。而 <code>DatabasePushChannel.push</code> 落库失败是<strong>重抛</strong> <code>RuntimeException(&quot;通知持久化失败&quot;)</code>（<code>notification/push/DatabasePushChannel.java:34-37</code>）——它被这里的内层 try 吞成一行 error 日志。结论：<strong>DB 写失败的通知也会计入 successCount</strong>。&quot;通知发送完成 successCount&#x3D;N&quot; 这行日志里的数字会说谎，<code>log.error</code> 才是事实源（00-README 域09 行：&quot;send() 循环内逐人 try + 通道内层 try&quot;）。</p>
+<h4 id="双通道互补"><a href="#双通道互补" class="headerlink" title="双通道互补"></a>双通道互补</h4><p><code>WebSocketPushChannel.push</code>（<code>notification/push/WebSocketPushChannel.java:36-45</code>）先 <code>isAvailable()</code> 再 <code>sessionManager.isOnline(userId)</code>，离线直接 return——所以 WS 通道&quot;失败&quot;分两种：人不在线（正常跳过）和推的时候 IOException（warn 一句&quot;非致命错误&quot;）。落库这件事全压在 Database 通道上。WS 那边，在线的人少刷一次页面罢了。</p>
+<h4 id="sendAndPush-的双推"><a href="#sendAndPush-的双推" class="headerlink" title="sendAndPush 的双推"></a>sendAndPush 的双推</h4><p><code>NotificationPublisherImpl.java:181-200</code>：先 <code>send(dto)</code>（每个通道都已推过一遍），随后又对 <code>WebSocketPushChannel</code> 调一遍 <code>pushIfOnline</code>——在线用户同一通知会收到两次 WS 推送，第二次的 <code>buildQuickNotification</code> 是个简化实体（type 还是 <code>mapToNotificationType</code> 把字符串粗映射成 Integer 0-4 的那套，169 行注释自己都写&quot;第二条冗余推送&quot;）。</p>
+<h3 id="这一层的真实接线状态（域09-①-108-111-判定表-逐-Handler-死活）"><a href="#这一层的真实接线状态（域09-①-108-111-判定表-逐-Handler-死活）" class="headerlink" title="这一层的真实接线状态（域09-① 108-111 判定表 + 逐 Handler 死活）"></a>这一层的真实接线状态（域09-① 108-111 判定表 + 逐 Handler 死活）</h3><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>判定</th>
+<th>依据（手记&#x2F;源码）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>send &#x2F; sendAndPush</td>
+<td><strong>live</strong></td>
+<td>域09-① <code>277</code>：全项目发通知的唯一入口；send 的调用方是 2 个 MQ 消费者，sendAndPush 是 4 个业务类</td>
+</tr>
+<tr>
+<td>InteractionNotificationHandler</td>
+<td>live</td>
+<td>评论&#x2F;点赞&#x2F;私信回复真实投 <code>post_comment</code> 等类型</td>
+</tr>
+<tr>
+<td>CircleNotificationHandler</td>
+<td>live（部分分支 dead）</td>
+<td><code>circle_join</code> 有生产方；<code>default -&gt;</code> 分支不可达（域09-① <code>110</code>）</td>
+</tr>
+<tr>
+<td>AnnouncementNotificationHandler</td>
+<td><strong>orphan</strong></td>
+<td>全仓无生产方发 <code>circle_announcement</code>（域09-① <code>111</code>）</td>
+</tr>
+<tr>
+<td>MessageNotificationHandler</td>
+<td>live</td>
+<td>私信路径投 <code>private_message</code>（<code>ChatWebSocketHandler.java:268-277</code>）</td>
+</tr>
+<tr>
+<td>SystemNotificationHandler</td>
+<td>live（兜底）</td>
+<td><code>getSupportedTypes()</code> 返回 <code>List.of(&quot;system&quot;)</code>，注册为 defaultHandler</td>
+</tr>
+<tr>
+<td>CircleNotificationService（3 个 @Async 方法）</td>
+<td><strong>orphan</strong></td>
+<td>全仓 0 调用方；域09-③ <code>346</code>：&quot;门面化如果没有接线，只是把死代码写得更优雅了&quot;</td>
+</tr>
+<tr>
+<td>MQ 两消费者调 send</td>
+<td>装睡</td>
+<td>默认 MQ 关；打开则每条必抛缺 receiverId（图8 细讲）</td>
+</tr>
+<tr>
+<td>@Async 门面的上下文</td>
+<td>坑</td>
+<td><code>ai-async-</code> 线程池无 TaskDecorator，UserContext&#x2F;MDC 不跟线程走（域09-③ <code>422</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="关键源码：validate-的互斥校验（NotificationPublisherImpl-java-207-220，节选）"><a href="#关键源码：validate-的互斥校验（NotificationPublisherImpl-java-207-220，节选）" class="headerlink" title="关键源码：validate 的互斥校验（NotificationPublisherImpl.java:207-220，节选）"></a>关键源码：validate 的互斥校验（<code>NotificationPublisherImpl.java:207-220</code>，节选）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">validate</span><span class="params">(NotificationSendDTO dto)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (dto == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;通知参数不能为空&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (dto.getReceiverId() == <span class="literal">null</span> &amp;&amp; (dto.getReceiverIds() == <span class="literal">null</span> || dto.getReceiverIds().isEmpty())) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;接收者 ID（receiverId 或 receiverIds）不能为空&quot;</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>一对多通知传 <code>receiverIds</code>、一对一传 <code>receiverId</code>，同时给就抛。这段防御就是防 MQ 消费者那种&quot;builder 忘了 set receiverId&quot;的写法，照是照出来了，代价是那条链路一打开也必抛，见图8。</p>
+<hr>
+<h2 id="图-7｜这张图回答：-api-ai-的一堆端点背后，8-个-AgentType-谁真有-handler？熔断为什么会被自己的降级响应清零？"><a href="#图-7｜这张图回答：-api-ai-的一堆端点背后，8-个-AgentType-谁真有-handler？熔断为什么会被自己的降级响应清零？" class="headerlink" title="图 7｜这张图回答：&#x2F;api&#x2F;ai 的一堆端点背后，8 个 AgentType 谁真有 handler？熔断为什么会被自己的降级响应清零？"></a>图 7｜这张图回答：&#x2F;api&#x2F;ai 的一堆端点背后，8 个 AgentType 谁真有 handler？熔断为什么会被自己的降级响应清零？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    E1["POST /api/ai/chat
+AiChatController.smartChat"]
+    E2["POST /api/ai/companion/stream
+SSE · 需登录"]
+    E3["POST /api/ai/discover
+AiDiscoverController"]
+    E4["GET /api/ai/hot-digest
+白名单匿名只读"]
+    R["AgentRouter.determineAgentType
+先让 LLM 按 ROUTER_PROMPT 选路
+提示词只教了 5 类 · AgentType 枚举有 8 值
+失败 → defaultRouting 关键词兜底"]
+    subgraph Wired["routeAndExecute 的 switch 八选一"]
+        K["CUSTOMER_SERVICE → executeCustomerService
+private 方法 · 不经 AbstractAgent"]
+        Q["KNOWLEDGE_BASE → executeKnowledgeBase
+RagKnowledgeService.ask"]
+        Ci["CIRCLE_ASSISTANT → circleAssistantHandler
+@Autowired 接线的 3 个 handler 之一"]
+        Cp["EMOTION_COMPANION → emotionCompanionHandler"]
+        Dc["CONTENT_DISCOVERY → contentDiscoveryHandler"]
+        Au["CONTENT_AUDIT → executeContentAudit
+返回罐头文本 请使用审核接口"]
+        Rc["RECOMMENDATION → executeRecommendation
+实际调的是 customerServiceAgent"]
+        G["GENERAL → executeGeneral"]
+    end
+    Tpl["AbstractAgent.execute 模板
+canExecute 熔断检查 → 重试循环
+recordSuccess/recordFailure → 降级"]
+    CB["AiCircuitBreaker
+5 次失败 OPEN · 60s 恢复 HALF_OPEN
+HALF_OPEN 全放行不放探针"]
+    FB["AiFallbackService.getFallbackResponse
+坑: 降级响应 builder 里 success(true)"]
+    Ctrl["AiChatController 按 response.isSuccess
+记 recordSuccess → 降级也被当成成功
+把自己熔断器清零"]
+
+    E1 --> R --> Wired
+    Ci --> Tpl
+    Cp --> Tpl
+    Dc --> Tpl
+    Tpl --> CB
+    Tpl --> FB --> Ctrl
+    E2 --> Cp2["CompanionStreamService
+危机词闸 + 滑窗记忆 + 摘要
+不注入熔断器 → 流式不过熔断"]
+    E3 --> Dc2["ContentHybridSearchService
+意图解析 LLM + 混合召回 + 重排"]
+    E4 --> DG["HotDigestJob 离线摘要
+读缓存结果"]
 </pre></div>
 
-<p>实测过熔断：故意配坏 Key 连打，前 5 次每次约 1.6 秒，第 6 次开始 8ms。但那批 50&#x2F;50 的数字里混着 41 次 403，真凶是权限注解不是限流，误诊还被我写进了脚本注释——这种账也得画进图里，不然就只剩好话了。</p>
-<h1 id="8-MQ-消息流"><a href="#8-MQ-消息流" class="headerlink" title="8. MQ 消息流"></a>8. MQ 消息流</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
-    E1["PostCreatedEvent"]
-    E2["CommentCreatedEvent"]
-    E3["PostAuditEvent"]
-    E4["CounterSyncEvent"]
-    T["@TransactionalEventListener AFTER_COMMIT
-发送失败业务层 try-catch 降级直连"]
-    X1["post exchange"]
-    X2["comment exchange"]
-    X3["audit exchange"]
-    X4["counter exchange
-3 个事件 0 生产者"]
-    C1["PostNotificationConsumer"]
-    C2["CommentNotificationConsumer"]
-    C3["PostAuditConsumer"]
-    C4["CounterSyncConsumer"]
-    DLX["死信队列"]
+<h3 id="逐节点说明：8-5-3-三个数的账"><a href="#逐节点说明：8-5-3-三个数的账" class="headerlink" title="逐节点说明：8&#x2F;5&#x2F;3 三个数的账"></a>逐节点说明：8&#x2F;5&#x2F;3 三个数的账</h3><p><code>ai/agent/router/AgentRouter.java</code> 全文 178 行，三个数都在这一个包里：</p>
+<ul>
+<li><strong>8</strong>：<code>AgentType</code> 枚举 8 个值（README 域16 行与 <code>routeAndExecute</code> 的 switch 八分支，<code>AgentRouter.java:56-65</code>）。</li>
+<li><strong>5</strong>：ROUTER_PROMPT 只向 LLM 介绍 5 类（<code>AgentRouter.java:22-32</code>）：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">PromptTemplate</span> <span class="variable">ROUTER_PROMPT</span> <span class="operator">=</span> PromptTemplate.from(</span><br><span class="line">        <span class="string">&quot;你是一个智能路由助手。请分析用户的问题，判断应该由哪个Agent处理。\n\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;可用的Agent类型：\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;1. CUSTOMER_SERVICE - 智能客服：处理用户咨询、问题解答、操作指南\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;2. KNOWLEDGE_BASE - 知识库助手：基于文档回答专业知识问题\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;3. CONTENT_AUDIT - 内容审核：审核帖子和评论的内容安全性\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;4. RECOMMENDATION - 推荐助手：根据用户兴趣推荐帖子和圈子\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;5. GENERAL - 通用助手：处理无法归类的一般性问题\n\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;用户问题：&#123;&#123;query&#125;&#125;\n\n&quot;</span> +</span><br><span class="line">        <span class="string">&quot;请只返回Agent类型的code，如：CUSTOMER_SERVICE&quot;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
 
-    E1 --> T --> X1 --> C1
-    E2 --> T --> X2 --> C2
-    E3 --> T --> X3 --> C3
-    E4 --> T --> X4 --> C4
-    C1 --> DLX
-    C2 --> DLX
+<ul>
+<li><p><strong>3</strong>：真正 <code>@Autowired</code> 进路由的 handler 只有 3 个（<code>AgentRouter.java:42-47</code>）：<code>CircleAssistantAgentHandler</code>、<code>EmotionCompanionAgentHandler</code>、<code>ContentDiscoveryAgentHandler</code>。这 3 个继承 <code>AbstractAgent</code>，走熔断&#x2F;重试&#x2F;降级&#x2F;统计全家桶；其余 5 类走 Router 里的 private 方法，<strong>完全不经过熔断器</strong>（域16-⑤ <code>211</code> 行原话）。而域16-③ <code>235</code> 行给了一个更反直觉的推论：模型按 5 类提示词答题，<strong>基本叫不到这 3 个受保护 handler 的名字</strong>——保护做了，路由够不着。另有 5 个 Handler 类（CustomerService&#x2F;Rag&#x2F;General&#x2F;Recommendation&#x2F;ContentAudit 各 AgentHandler）除类声明外全仓 0 引用（域16-③ <code>214</code>）。三个数对不上，还都待在同一个包里。以后加 Agent，漏改任何一处都是静悄悄失效，不会有人提醒你。</p>
+</li>
+<li><p><strong>CONTENT_AUDIT 罐头</strong>（<code>AgentRouter.java:149-155</code>）：switch 里 <code>case CONTENT_AUDIT -&gt; executeContentAudit(request)</code> 在，方法体却返回固定文案&quot;内容审核功能需要调用审核API，请使用审核接口&quot;——路由通、业务空。真正的审核在旁路：<code>ai/audit/ContentAuditService.auditAsync</code> 标 <code>@Async</code>（<code>ai/audit/ContentAuditService.java:43-44</code>），发帖时由 MQ 消费者或降级直调触发（图8），异常时 <code>new AuditResult(true, &quot;low&quot;, &quot;审核异常，默认通过&quot;)</code>（第 78 行）——审核挂了<strong>默认放行</strong>，与 AbstractAgent 里 fail-closed 的审核 Agent 设计意图（<code>isFailClosed</code> 覆写 true）方向相反，这也是手记要求如实画的格子。</p>
+</li>
+<li><p><strong>RECOMMENDATION 的指鹿为马</strong>（<code>AgentRouter.java:157-165</code>）：<code>executeRecommendation</code> 拼一句&quot;根据用户的问题，推荐相关的帖子或圈子。用户问题: ...&quot;然后调的还是 <code>customerServiceAgent.chat</code>——客服 Agent 套了个推荐的名字。真正的推荐链在 <code>/api/ai/discover</code>：<code>ContentHybridSearchService</code>（意图解析 <code>DiscoveryIntentParser</code> → 混合召回 → LLM 重排），域15 手记核实出来的有两件事：<strong>删帖不删向量</strong>（物理 <code>DELETE FROM t_post_base</code> 而 <code>t_ai_embedding</code> 无删除逻辑，&quot;帖已经没了、向量还在表里是必然发生的&quot;，靠 <code>selectByIds</code> 判空兜底，域15-① <code>1124</code>）；<strong>重排序功能上是 dead</strong>（LLM rerank 返回的 LinkedHashMap 顺序全仓没人读，卡片顺序来自融合分序，域15-① <code>1300</code>：&quot;它现在真正的名字叫理由生成器&quot;）。</p>
+</li>
+<li><p><strong>危机词闸</strong>：<code>ai/companion/service/CrisisRuleChecker.java</code> 的 <code>@Value</code> 注解默认值写了 20 个词（第 28 行），但 <code>application.yml:124</code> 显式给了 9 个词（<code>自伤,轻生,不想活,活着没有意义,没有意义,想死,自杀,自残,结束生命</code>）——Spring 语义下配置<strong>整体替换</strong>注解默认；<code>keywords()</code> 里又 <code>set.add</code> 5 个内置兜底（<code>CrisisRuleChecker.java:73-78</code>）。按域14-③ <code>64</code> 行核算，运行时真正生效的词表是 <strong>11 个</strong>（yml 9 词与代码兜底取 LinkedHashSet 去重并集），注释里&quot;此处可运营追加&quot;是误导——这里不是追加是替换。三层词表实际两层参与：yml 层 + 代码兜底层。</p>
+</li>
+<li><p><strong>SSE 不过熔断</strong>：陪伴流式端点（<code>ai/companion/controller/AiCompanionController.java:39-48</code>）直接进 <code>CompanionStreamService.stream(...)</code>；域14-③ <code>340</code> 行核实 <code>CompanionStreamService</code> <strong>根本没注入</strong> <code>AiCircuitBreaker/AiFallbackService</code> 两个 Bean——&quot;全仓 <code>canExecute</code> 只有两个调用点：<code>AbstractAgent.execute</code> 和 <code>AiChatController</code>&quot;。网关一直 5xx，这条 SSE 就一直往里打。协议按 <code>②七层讲解</code> 引的 PRD 8.5：<code>emotion → tokens → cards → crisis → done</code>，危机分支直接 <code>crisis → done</code> 不进生成。</p>
+</li>
+<li><p><strong>熔断器本体与自清零坑</strong>（<code>ai/fallback/AiCircuitBreaker.java:53-65</code>）：</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">recordSuccess</span><span class="params">(String serviceKey)</span> &#123;</span><br><span class="line">    resetCounter(serviceKey);</span><br><span class="line">    setState(serviceKey, CircuitState.CLOSED);</span><br><span class="line">    log.info(<span class="string">&quot;服务恢复成功，重置熔断器, serviceKey=&#123;&#125;&quot;</span>, serviceKey);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">recordFailure</span><span class="params">(String serviceKey)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">failureCount</span> <span class="operator">=</span> incrementFailure(serviceKey);</span><br><span class="line">    <span class="keyword">if</span> (failureCount &gt;= DEFAULT_FAILURE_THRESHOLD) &#123;</span><br><span class="line">        setState(serviceKey, CircuitState.OPEN);</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+
+<p>降级响应侧（<code>ai/fallback/AiFallbackService.java:22-31</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> AgentResponse <span class="title function_">getFallbackResponse</span><span class="params">(String query, AgentType agentType)</span> &#123;</span><br><span class="line">    log.warn(<span class="string">&quot;触发降级策略, query=&#123;&#125;, agentType=&#123;&#125;&quot;</span>, query, agentType);</span><br><span class="line"></span><br><span class="line">    <span class="type">String</span> <span class="variable">fallbackAnswer</span> <span class="operator">=</span> getFallbackAnswer(agentType);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> AgentResponse.builder()</span><br><span class="line">            .answer(fallbackAnswer)</span><br><span class="line">            .success(<span class="literal">true</span>)</span><br><span class="line">            .agentType(agentType)</span><br><span class="line">            .build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>success(true)</code> + <code>AiChatController.java:82</code> 的 <code>circuitBreaker.recordSuccess(response.getAgentType().getCode())</code>：控制器按 <code>isSuccess()</code> 记成功——降级罐头话也被记成一次成功，<code>resetCounter</code> 把自己熔断器的失败计数清零。域16 行的原话：&quot;降级响应 <code>success(true)</code> 把自己熔断器清零&quot;。另外半开态 <code>canExecute</code> 对 HALF_OPEN 直接 <code>return true</code>（<code>AiCircuitBreaker.java:50</code>），**全放行、没有&quot;只放一个探针&quot;**（域14-③ <code>353</code>）。</p>
+<ul>
+<li><strong>RAG 内存库</strong>：<code>ai/rag/config/RagConfig.java:27-40</code>：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> EmbeddingStore <span class="title function_">embeddingStore</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">InMemoryEmbeddingStore</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> ContentRetriever <span class="title function_">contentRetriever</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> EmbeddingStoreContentRetriever.builder()</span><br><span class="line">            .embeddingStore(embeddingStore())</span><br><span class="line">            .embeddingModel(embeddingModel())</span><br><span class="line">            .maxResults(<span class="number">3</span>)</span><br><span class="line">            .minScore(<span class="number">0.7</span>)</span><br><span class="line">            .build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>向量存进程内存，重启即失；嵌入模型 <code>AllMiniLmL6V2EmbeddingModel</code> 本地跑（第 19 行），不花 API 钱。<code>AiConfig.ragKnowledgeService()</code> 没有 ContentRetriever 应用直接起不来（域16-③ <code>284</code>），所以这个 Bean 是硬依赖，跑不掉的。发帖向量写入在 <code>PostServiceImpl.java:191-195</code>（<code>contentEmbeddingService.embedPost(...)</code> 失败只 warn）。</p>
+<h3 id="这一层的真实接线状态-4"><a href="#这一层的真实接线状态-4" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>组件&#x2F;链路</th>
+<th>判定</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST &#x2F;api&#x2F;ai&#x2F;chat → AgentRouter</td>
+<td>live</td>
+<td><code>AiChatController.java:36</code></td>
+</tr>
+<tr>
+<td>CIRCLE_ASSISTANT&#x2F;EMOTION_COMPANION&#x2F;CONTENT_DISCOVERY 3 handler</td>
+<td>live（有模板保护）</td>
+<td><code>AgentRouter.java:42-47</code> 注入 + switch 直调 handler</td>
+</tr>
+<tr>
+<td>其余 5 类走 private 方法</td>
+<td>live 但<strong>无熔断保护</strong></td>
+<td>域16-⑤ <code>211</code></td>
+</tr>
+<tr>
+<td>5 个未注入的 AgentHandler 类</td>
+<td><strong>orphan</strong></td>
+<td>域16-③ <code>214</code>：除类声明全仓 0 引用</td>
+</tr>
+<tr>
+<td>CONTENT_AUDIT 路由分支</td>
+<td>dead 语义（罐头返回）</td>
+<td><code>AgentRouter.java:149-155</code>；README 域07 行同判</td>
+</tr>
+<tr>
+<td>审核旁路 ContentAuditService</td>
+<td>live（@Async；异常默认通过）</td>
+<td><code>ContentAuditService.java:43-78</code></td>
+</tr>
+<tr>
+<td>companion SSE</td>
+<td>live，<strong>不过熔断</strong></td>
+<td>域14-③ <code>340</code></td>
+</tr>
+<tr>
+<td>AiCircuitBreaker</td>
+<td>live</td>
+<td>Redis 计数 + 内存状态表双写</td>
+</tr>
+<tr>
+<td>AiFallbackService</td>
+<td>live</td>
+<td>被 AbstractAgent 与 AiChatController 调用</td>
+</tr>
+<tr>
+<td>降级响应 success(true)</td>
+<td><strong>缺陷在跑</strong></td>
+<td><code>AiFallbackService.java:27-31</code> + <code>AiChatController.java:82</code></td>
+</tr>
+<tr>
+<td>RedisBackedChatMemory</td>
+<td>unused</td>
+<td>类在（<code>ai/memory/</code>），<code>AiConfig.chatMemoryProvider()</code> 没接它（域16-⑥ <code>86</code>）</td>
+</tr>
+<tr>
+<td>t_ai_stats 落库</td>
+<td>建表未接线</td>
+<td>域16-④ <code>329</code></td>
+</tr>
+</tbody></table>
+<h3 id="量化结果"><a href="#量化结果" class="headerlink" title="量化结果"></a>量化结果</h3><p><code>evidence-pack/SUMMARY.md</code> §5 LLM 熔断实测：熔断前约 <strong>1.6s&#x2F;次</strong>，OPEN 后 <strong>8ms</strong>（直接短路返回降级），状态读数 <code>failures=5, state=OPEN</code>——阈值 5 次正是 <code>AiCircuitBreaker.java:17</code> 的 <code>DEFAULT_FAILURE_THRESHOLD = 5</code>。这组数字能证明&quot;熔断确实在本机被打穿过又确实熔了&quot;。至于熔断对生产事故率的影响，没测过，写【待你补充】。</p>
+<hr>
+<h2 id="图-8｜这张图回答：MQ-拓扑有-4-个交换机-8-个队列-4-个消费者，为什么实测结论是-主链路不依赖它-？"><a href="#图-8｜这张图回答：MQ-拓扑有-4-个交换机-8-个队列-4-个消费者，为什么实测结论是-主链路不依赖它-？" class="headerlink" title="图 8｜这张图回答：MQ 拓扑有 4 个交换机 8 个队列 4 个消费者，为什么实测结论是&quot;主链路不依赖它&quot;？"></a>图 8｜这张图回答：MQ 拓扑有 4 个交换机 8 个队列 4 个消费者，为什么实测结论是&quot;主链路不依赖它&quot;？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    subgraph Producer["生产端 · 全仓 convertAndSend 仅 3 处 · 全在 PostServiceImpl"]
+        PS["publishPostCreatedEvent
+try-catch 包住 3 次 convertAndSend"]
+    end
+    CFG{"spring.rabbitmq.enabled?
+RABBITMQ_ENABLED 默认 false
+配置类与 4 个消费者全 ConditionalOnProperty"}
+    X1["post.exchange topic+durable"]
+    X2["comment.exchange"]
+    X3["user.exchange"]
+    X4["counter.exchange"]
+    RK1["routing key post.created"]
+    RK2["routing key post.audit"]
+    RK3["routing key post.notification"]
+    Q1["post.created.queue
+挂 DLX 参数"]
+    Q2["post.audit.queue
+挂 DLX"]
+    Q3["post.notification.queue
+挂 DLX"]
+    Q4["comment.created.queue · 无生产无消费"]
+    Q5["comment.notification.queue · 有消费无生产"]
+    Q6["user.registered.queue · 两头全空"]
+    Q7["counter.sync.queue · 有消费无生产"]
+    DLQ["post.dead.letter.queue
+唯一不挂 DLX 是必须的 · 无 listener · 只进不出"]
+    C1["无消费者监听"]
+    C2["PostAuditConsumer
+auditAsync 真触发 · 端到端唯一全通链"]
+    C3["PostNotificationConsumer
+send 构造缺 receiverId → 每条必抛 → 重试3次 → 进 DLQ"]
+    C7["CounterSyncConsumer
+只 SET Redis 永不落库"]
+    Deg["发送失败 catch 降级：
+mqSent=false → contentAuditService.auditAsync 直连"]
+
+    PS --> CFG
+    CFG -->|false 默认| Deg
+    CFG -->|true| X1
+    X1 --> RK1 --> Q1 --> C1
+    X1 --> RK2 --> Q2 --> C2
+    X1 --> RK3 --> Q3 --> C3
+    Q1 -->|死信| DLQ
+    Q2 -->|死信| DLQ
+    Q3 -->|死信| DLQ
+    X2 -.->|无生产点| Q4
+    X2 -.->|无生产点| Q5
+    X3 -.-> Q6
+    X4 -.->|无生产点| Q7
 </pre></div>
 
-<p>MQ 默认整个关着，<code>RABBITMQ_ENABLED=false</code>。关着的时候发帖实测 50&#x2F;50 成功、平均 39.8ms，证明主链路不依赖它。拓扑图好看，生产者三缺一，这个格子永远是空的。</p>
-<h1 id="9-WebSocket-私信时序"><a href="#9-WebSocket-私信时序" class="headerlink" title="9. WebSocket 私信时序"></a>9. WebSocket 私信时序</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>sequenceDiagram
+<h3 id="逐节点说明：三处生产、四处消费、一条真链"><a href="#逐节点说明：三处生产、四处消费、一条真链" class="headerlink" title="逐节点说明：三处生产、四处消费、一条真链"></a>逐节点说明：三处生产、四处消费、一条真链</h3><h4 id="MQ-总开关：整层条件装配"><a href="#MQ-总开关：整层条件装配" class="headerlink" title="MQ 总开关：整层条件装配"></a>MQ 总开关：整层条件装配</h4><p><code>mq/config/RabbitMQConfig.java:13</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ConditionalOnProperty(prefix = &quot;spring.rabbitmq&quot;, name = &quot;enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = false)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RabbitMQConfig</span> &#123;</span><br></pre></td></tr></table></figure>
+
+<p><code>matchIfMissing = false</code>，yml 里没写这个键也照样不装配。<code>application.yml:41</code> 写的是 <code>enabled: $&#123;RABBITMQ_ENABLED:false&#125;</code>，默认关。同样的注解挂在 4 个消费者类上（各自第 15 行附近，如 <code>PostAuditConsumer.java:15</code>）。旁边还有个 <code>RabbitMQAutoConfiguration.java</code> 共 10 行、类体注释都没有内容，只有同款 <code>@ConditionalOnProperty</code>，它搁在那儿，算是给&quot;MQ 整层是开关件&quot;作个标记。</p>
+<h4 id="唯一的发送点"><a href="#唯一的发送点" class="headerlink" title="唯一的发送点"></a>唯一的发送点</h4><p><code>service/impl/PostServiceImpl.java:166-196</code>，节选：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">publishPostCreatedEvent</span><span class="params">(PostBase postBase, String content)</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">mqSent</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">PostCreatedEvent</span> <span class="variable">event</span> <span class="operator">=</span> PostCreatedEvent.builder()</span><br><span class="line">                .postId(postBase.getId())</span><br><span class="line">                .authorId(postBase.getAuthorId())</span><br><span class="line">                .content(content)</span><br><span class="line">                .circleId(postBase.getCircleId())</span><br><span class="line">                .sectionId(postBase.getSectionId())</span><br><span class="line">                .createTime(postBase.getCreateTime())</span><br><span class="line">                .build();</span><br><span class="line">        rabbitTemplate.convertAndSend(RabbitMQConfig.POST_EXCHANGE, <span class="string">&quot;post.created&quot;</span>, event);</span><br><span class="line">        rabbitTemplate.convertAndSend(RabbitMQConfig.POST_EXCHANGE, <span class="string">&quot;post.audit&quot;</span>, event);</span><br><span class="line">        rabbitTemplate.convertAndSend(RabbitMQConfig.POST_EXCHANGE, <span class="string">&quot;post.notification&quot;</span>, event);</span><br><span class="line">        mqSent = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        log.warn(<span class="string">&quot;[发帖] MQ 发送失败，降级直接处理: postId=&#123;&#125;&quot;</span>, postBase.getId(), e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!mqSent) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            contentAuditService.auditAsync(content, <span class="string">&quot;post&quot;</span>, postBase.getId());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;[发帖] 直接审核触发失败: postId=&#123;&#125;&quot;</span>, postBase.getId(), e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>细节有三块，① builder 没有 set <code>title</code>，而 <code>PostNotificationConsumer</code> 日志和文案里用 <code>event.getTitle()</code>（<code>PostNotificationConsumer.java:26,35</code>）——<code>PostCreatedEvent</code> 有 title 字段（<code>PostCreatedEvent.java:23</code>）所以编译与序列化都没事，运行时永远是 null，通知文案拼出 <code>&quot;圈子内发布了新帖子: null&quot;</code>；② 一次发布投三个 routing key，<code>post.created</code> 队列<strong>没有任何消费者</strong>（全仓 <code>@RabbitListener</code> 实测 4 处，无一对它），审核走的是 <code>post.audit</code> 这条；③ 发送失败被整体 catch 住，降级直接调 <code>auditAsync</code>，发帖成功率和 MQ 就没多大关系了。</p>
+<p><strong>3 事件 0 生产者</strong>：域17-① <code>117-119</code> 的判定表照抄——<code>CommentCreatedEvent</code> <strong>orphan 半条</strong>（只有消费者无生产者）、<code>CounterSyncEvent</code> <strong>orphan 半条</strong>（同，且消费者只写 Redis 从不落库，<code>CounterSyncConsumer.java:31</code> 只有一行 <code>set</code>）、<code>UserRegisteredEvent</code>（mq 包那个）<strong>完全 orphan</strong>（无生产者且无消费者，全仓 0 引用。<code>event/</code> 包还有个同名 Spring 事件是 live 的，这俩别搅一起，同名归同名，是两回事）。域17-① <code>735</code> 的数：8 个队列里两头全空 1 个（user.registered）、只有一头 5 个。</p>
+<p><strong>必抛的消费者</strong>（<code>mq/consumer/PostNotificationConsumer.java:29-38</code>）：builder 里根本没有 <code>.receiverId(...)</code>，<code>send()</code> 第一步 <code>validate</code> 就抛 <code>IllegalArgumentException</code>（图6 抄过的那段），catch 后 <code>throw e</code>（第 44 行）→ Spring AMQP retry 3 次（<code>application.yml:55-58</code>）→ 耗尽 reject → <code>post.notification.queue</code> 挂了 DLX → 进 <code>post.dead.letter.queue</code>。所以 <strong>MQ 一旦打开，每条新帖通知都得走满&quot;重试三次进死信&quot;这一趟</strong>，条条如此。CommentNotificationConsumer 同款毛病（域17-⑤ <code>585</code>：四个消费者 catch 全部 <code>throw e</code>，真能走满&quot;抛→重试→死信&quot;全程的只有 post 系——comment&#x2F;counter 哪有消息进来）。</p>
+<p><strong>死信柜只进不出</strong>：域17-⑥ <code>20</code> 行原话——&quot;DLX 参数 + <code>postDeadLetterBinding()</code> 都齐，broker 会把消息准确搬进 <code>post.dead.letter.queue</code>；<strong>但这个队列没有任何 <code>@RabbitListener</code>，也没人读它</strong>&quot;。消息本身不会消失（三个 post 业务队列都挂 <code>x-dead-letter-exchange</code>），但要说&quot;有兜底&quot;，谈不上。comment 两队列还是裸声明（<code>RabbitMQConfig.java:124-131</code> 无 withArgument），同一条 bug 在 comment 队列的下场是&quot;重试 3 次后当场蒸发、零死信&quot;（域09-⑥ <code>836</code>）。</p>
+<h3 id="这一层的真实接线状态-5"><a href="#这一层的真实接线状态-5" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>链路</th>
+<th>生产者</th>
+<th>消费者</th>
+<th>端到端判定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>post.created</td>
+<td>1 处 convertAndSend</td>
+<td>无</td>
+<td><strong>半接线</strong>（消息进柜无人取）</td>
+</tr>
+<tr>
+<td>post.audit</td>
+<td>同上</td>
+<td>PostAuditConsumer</td>
+<td><strong>全仓唯一端到端真通链</strong>（域17-④ <code>923</code>）</td>
+</tr>
+<tr>
+<td>post.notification</td>
+<td>同上</td>
+<td>PostNotificationConsumer</td>
+<td>live 拓扑 + <strong>每条必抛业务码</strong>（缺 receiverId）</td>
+</tr>
+<tr>
+<td>comment.*</td>
+<td>0</td>
+<td>CommentNotificationConsumer</td>
+<td>orphan（无生产端）</td>
+</tr>
+<tr>
+<td>user.registered</td>
+<td>0</td>
+<td>0</td>
+<td>两头全空</td>
+</tr>
+<tr>
+<td>counter.sync</td>
+<td>0</td>
+<td>CounterSyncConsumer</td>
+<td>orphan + 只写 Redis 不落库</td>
+</tr>
+<tr>
+<td>post.dead.letter</td>
+<td>DLX 自动投递</td>
+<td>0</td>
+<td>只进不出</td>
+</tr>
+<tr>
+<td>计数最终一致（真方案）</td>
+<td>定时扫库任务（live）</td>
+<td>—</td>
+<td>README 域17：MQ 同步是 dead，定时对账才是 live</td>
+</tr>
+<tr>
+<td>整个 MQ 层</td>
+<td><code>RABBITMQ_ENABLED=false</code></td>
+<td>默认不装配</td>
+<td>默认关闭</td>
+</tr>
+</tbody></table>
+<h3 id="量化结果-1"><a href="#量化结果-1" class="headerlink" title="量化结果"></a>量化结果</h3><p><code>evidence-pack/fresh_mq_20260916_190531.json</code>：MQ 不可达场景下发帖 <strong>50&#x2F;50 成功、AvgRtMs 39.8</strong>（<code>SUMMARY.md</code> §3 同数）。这条实测把&quot;主链路不依赖 MQ&quot;算是钉死了，降级 catch 不光写在纸面上，压测是真跑过的。打开 MQ 之后 post.notification 链死信堆得多快，这个没长测过，写【待你补充】。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;Tag&quot;</span><span class="punctuation">:</span>  <span class="string">&quot;fresh_mq_20260916_190531&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Fail&quot;</span><span class="punctuation">:</span>  <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;P50&quot;</span><span class="punctuation">:</span>  <span class="number">47</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Total&quot;</span><span class="punctuation">:</span>  <span class="number">50</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Success&quot;</span><span class="punctuation">:</span>  <span class="number">50</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Biz429&quot;</span><span class="punctuation">:</span>  <span class="number">0</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;AvgRtMs&quot;</span><span class="punctuation">:</span>  <span class="number">39.8</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="图-9｜这张图回答：私信从握手到送达的每一步是什么？-扩容即失联-和-重连误删新连接-各发生在哪一格？"><a href="#图-9｜这张图回答：私信从握手到送达的每一步是什么？-扩容即失联-和-重连误删新连接-各发生在哪一格？" class="headerlink" title="图 9｜这张图回答：私信从握手到送达的每一步是什么？&quot;扩容即失联&quot;和&quot;重连误删新连接&quot;各发生在哪一格？"></a>图 9｜这张图回答：私信从握手到送达的每一步是什么？&quot;扩容即失联&quot;和&quot;重连误删新连接&quot;各发生在哪一格？</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>sequenceDiagram
     participant B as 浏览器
     participant H as ChatWebSocketHandler
-    participant S as SessionManager
+    participant SM as SessionManager
+    participant MB as MessageBroker
     participant DB as MySQL
 
-    B->>H: 连 ws chat 路径带 token
-    H->>H: 校验 token
-    H->>S: register userId 到单机 ConcurrentHashMap
-    H-->>B: 握手成功
-    B->>H: 发消息
-    H->>DB: 落库
-    H->>S: send 或 broadcast
-    S-->>B: 推送
-    Note over S: 扩容即失联, 会话只在单进程堆里
-    B->>H: 断线重连
-    H->>S: removeSession 只按 key 删
-    Note over S: 旧连接关闭事件晚到, 会误删新连接登记
+    B->>H: GET /ws/private/{userId}?token=...（过滤器对 /ws/** 放行）
+    H->>H: extractUserId 取路径第4段；extractToken 取 query 里的 token
+    H->>H: validateToken · jwtUtil 验签取 userId；不等则 close(NOT_ACCEPTABLE)
+    H->>SM: addSession(userId, session)；单机 ConcurrentHashMap put 覆盖旧值
+    Note over SM: 多端登录无通知无挤下线提示；旧端从此静默（互踢是隐式的）
+    H-->>B: type=welcome 连接成功
+    B->>H: {"action":"send","receiverId":7,"content":"..."}
+    H->>H: type 缺失时按 action 映射；send+receiverId 改判为 private
+    H->>DB: privateMessageMapper.insert 落库
+    H->>H: notificationPublisher.sendAndPush 私信通知
+    H->>SM: isOnline(receiverId)?
+    H->>MB: sendToUser(receiverId, msg)（在线才）
+    MB->>MB: CompletableFuture.runAsync；session.sendMessage(json)
+    MB-->>B: WS 帧推给接收者
+    Note over MB: IOException → log.error + removeSession(userId)；按 key 删 · 不校验是不是自己这根
+    H-->>B: type=ack 回执给发送者（含 messageId）
+    B->>H: 断网后重连（前端补拉 GET /api/messages/history/{userId}）
+    H->>SM: addSession(userId, 新session)
+    B--xH: 旧连接的 close 事件这时才到
+    H->>SM: afterConnectionClosed → removeSession(userId)
+    Note over SM: 把刚登记的新 session 删了；此后 isOnline 恒 false · 推送永久静默
 </pre></div>
 
-<p>产品规矩是私信发送强制走 WS，禁止 HTTP 兜底发送，这条写在需求 7.6 里，理由是静默降级会把故障从可见变成不可见。技术上在线表就是个 HashMap 级别的单机真相，多端互踢和重连误删都还活着。</p>
-<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>九张图，每张都比旧版少画了一点功劳、多标了一点窟窿。全景图这玩意儿在我这儿翻过车，仓库里那套 docs&#x2F;全景图 登记过三个网关类，源码里早删干净了，文档跑在代码前面，然后又跑丢了。所以现在图只当导航用，里面每句话都得能被源码驳回。驳回就驳回，源码赢是天经地义的，我自己都不接受这一条的话，别的就更没什么好讲的了。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">HE</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/">http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Hexo</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%9F%A5%E6%BA%90Flow/">知源Flow</a><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84%E5%9B%BE/">架构图</a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a><a class="post-meta__tags" href="/tags/Mermaid/">Mermaid</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">这篇也重写。旧版发出去之后我把仓库从头读了一遍，读完发现起源还是那个起源，但里面几处我当时讲高了，什么&quot;完整三防&quot;&quot;吊销机制&quot;，还有 git 历史这件事我一直没提过。先讲起源，再讲哪些是真想清楚了、哪些是后来才看明白的，看明白得晚的也不少。 为什么做这个我之前写过不少练手项目，登录、增删改查、表单管理、SSM 单体，全是那种一眼看得穿的管理系统。真正让我下决心重做一个的，不是又想写新项目了，是发现手里这些东西撑不起一个后端该有的厚度，简历上排不开，面试讲不出第二层。 起点是 QQ 频道，圈子加分区那套组织方式，我觉得那个结构天然适合把人放在一起说话。后来刷抖音，看评论区，算法把爱好相同的人聚到同一条内容底下，满屏都是&quot;有人懂我&quot;&quot;终于有真实反馈了&quot;这类话。我就想，把有共鸣的人放进同一个圈子，&quot;懂我&quot;这件事能不能不用用户自己去茫茫内容里捞，让它自己发生。 于是有了 zhiyuan_Flow，现在叫知源 Flow。 为什么不选电商不选博客，选社区——因为我真的天天刷社区。哪个环节让人想...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">知源 Flow 项目总览与架构设计</div></div><div class="info-2"><div class="info-item-1">这篇重写了一遍。上一版是对着 README 写的，后来我把整个仓库从头逐行翻了一遍，切成十七个域，一个域六篇文档，翻完回头看旧文章，有几个说法是给自己脸上贴金的，没别的话讲。现在按真实的来。 这个项目是什么知源 Flow 是一个社区后端，想法来自 QQ 频道，圈子、分区、发帖那一套。做到 V3.0 收敛成了别的样子：首页不是帖子列表，是情绪地图；帖子在这里叫心声，评论区叫共鸣墙，点赞旁边有个抱抱。核心链路是情绪地图进圈子，发心声，别人共鸣，抱抱和评论推通知，通知带私信，AI 陪伴和推荐挂在外面一圈做增益。 技术形态上它是 Spring Boot 3.4.1 的单体后端，Java 17，三个 Maven 模块。不是微服务。微服务那部分我真做过，后来整个删掉了，后面讲。 规模，给能复现的口径简历上写规模最喜欢含糊，我这次不含糊，每个数都给统计命令，谁都可以自己去仓库数。    项 数 怎么数出来的    Maven 模块 3 个 models &#x2F; common &#x2F; api，依赖方向 api → common → models   Java 文件 399 个（api...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">核心代码的设计取舍</div></div><div class="info-2"><div class="info-item-1">这篇旧版是我对着记忆写的，里面有一段&quot;Lua 脚本原子释放锁&quot;，配了完整脚本，写得很漂亮。这次逐行翻源码，releaseLock 实际长这样： 123private void releaseLock(String lockKey) &#123;    stringRedisTemplate.delete(lockKey);&#125;  一行，裸删，没有 token，没有校验，锁过期慢了一步就会删掉别人刚加的锁。所以这一版所有取舍都按源码现在的样子讲，包括讲我自己把没做的事写成做过的事的那几处。代码全是仓库里的原文，路径都给你。 1. JwtAuthenticationFilter：白名单宁紧勿松api/.../config/JwtAuthenticationFilter.java，全项目每个请求都要穿它。 123456789101112131415161718192021222324private static final List&lt;String&gt; WHITE_LIST = List.of(        &quot;/api/auth/logi...</div></div></div></a><a class="pagination-related" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">Bug 修复全过程复盘</div></div><div class="info-2"><div class="info-item-1">旧版这篇发布的时候，我以为是在复盘&quot;我修过的 bug&quot;。后来把整个仓库逐域读了一遍才意识到，这个叙述只覆盖了一半——另一半 bug 根本没被修，它们今天还在源码里活着，而且大部分活得很好。这篇重写版就按这两半讲。 那次修复：一条提交记录说 14 个，正文只列了 13 个2026-06-28，提交 b183b68，标题是「fix: 修复通知系统、AI审核、图片上传、帖子交互等14个核心bug」。正文分四组列了 13 条，第 14 条其实是末尾那句「同时清理了未使用的gateway&#x2F;services模块和文档文件」。数字口径本身就是个 bug，这个细节旧版我没敢写。那次提交的 stat 是 88 个文件，+803 行，-6643 行，删掉的比修掉的多了八倍。 四组 bug 挨个说。 通知系统是重灾区，五条连着一条链。NotificationPublisherImpl 里注入的是 Map&lt;String, NotificationHandler&gt;，我一直以为 Map 的 key 是业务类型码，其实 Spring 给的是 Bean 名，handle...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">这篇也重写。旧版发出去之后我把仓库从头读了一遍，读完发现起源还是那个起源，但里面几处我当时讲高了，什么&quot;完整三防&quot;&quot;吊销机制&quot;，还有 git 历史这件事我一直没提过。先讲起源，再讲哪些是真想清楚了、哪些是后来才看明白的，看明白得晚的也不少。 为什么做这个我之前写过不少练手项目，登录、增删改查、表单管理、SSM 单体，全是那种一眼看得穿的管理系统。真正让我下决心重做一个的，不是又想写新项目了，是发现手里这些东西撑不起一个后端该有的厚度，简历上排不开，面试讲不出第二层。 起点是 QQ 频道，圈子加分区那套组织方式，我觉得那个结构天然适合把人放在一起说话。后来刷抖音，看评论区，算法把爱好相同的人聚到同一条内容底下，满屏都是&quot;有人懂我&quot;&quot;终于有真实反馈了&quot;这类话。我就想，把有共鸣的人放进同一个圈子，&quot;懂我&quot;这件事能不能不用用户自己去茫茫内容里捞，让它自己发生。 于是有了 zhiyuan_Flow，现在叫知源 Flow。 为什么不选电商不选博客，选社区——因为我真的天天刷社区。哪个环节让人想...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">HE</div><div class="author-info-description">用代码绘制世界，用文字记录生活</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">43</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Person-HE"><i class="fab fa-github"></i><span>关注我</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的手绘博客！这里正在持续更新中...</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%80%BB%E8%A7%88%EF%BC%8C%E8%AF%B7%E6%B1%82%E4%BB%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E5%88%B0%E8%90%BD%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">1. 总览，请求从浏览器到落库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Maven-%E4%B8%89%E6%A8%A1%E5%9D%97%EF%BC%8C%E4%BE%9D%E8%B5%96%E5%8D%95%E5%90%91"><span class="toc-number">2.</span> <span class="toc-text">2. Maven 三模块，依赖单向</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%89%E9%81%93%E9%98%B2%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">3. 认证鉴权三道防线</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E6%9D%83%E9%99%90%E7%AD%96%E7%95%A5%E8%B7%AF%E7%94%B1%EF%BC%8C6-%E4%B8%AA-Checker"><span class="toc-number">4.</span> <span class="toc-text">4. 权限策略路由，6 个 Checker</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E8%AF%BB%E8%B7%AF%E5%BE%84"><span class="toc-number">5.</span> <span class="toc-text">5. 多级缓存读路径</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-%E9%80%9A%E7%9F%A5%EF%BC%8C%E9%97%A8%E9%9D%A2%E5%8A%A0%E7%AD%96%E7%95%A5%E5%8A%A0%E5%8F%8C%E9%80%9A%E9%81%93"><span class="toc-number">6.</span> <span class="toc-text">6. 通知，门面加策略加双通道</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-AI-%E7%BA%B5%E9%98%9F"><span class="toc-number">7.</span> <span class="toc-text">7. AI 纵队</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-MQ-%E6%B6%88%E6%81%AF%E6%B5%81"><span class="toc-number">8.</span> <span class="toc-text">8. MQ 消息流</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-WebSocket-%E7%A7%81%E4%BF%A1%E6%97%B6%E5%BA%8F"><span class="toc-number">9.</span> <span class="toc-text">9. WebSocket 私信时序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E"><span class="toc-number">10.</span> <span class="toc-text">最后</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘">Bug 修复全过程复盘</a><time datetime="2026-09-17T02:50:00.000Z" title="发表于 2026-09-17 10:50:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍">核心代码的设计取舍</a><time datetime="2026-09-17T02:40:00.000Z" title="发表于 2026-09-17 10:40:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉">项目起源与设计初衷：知源 Flow 社区的来龙去脉</a><time datetime="2026-09-17T02:30:00.000Z" title="发表于 2026-09-17 10:30:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/" title="项目全景图：9 张图看懂知源 Flow">项目全景图：9 张图看懂知源 Flow</a><time datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计">知源 Flow 项目总览与架构设计</a><time datetime="2026-09-17T02:10:00.000Z" title="发表于 2026-09-17 10:10:00">2026-09-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By HE</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="/js/tw_cn.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+<h3 id="逐节点说明：握手四步与每步的真实条件"><a href="#逐节点说明：握手四步与每步的真实条件" class="headerlink" title="逐节点说明：握手四步与每步的真实条件"></a>逐节点说明：握手四步与每步的真实条件</h3><p><strong>端点注册</strong>在 <code>websocket/WebSocketConfig.java:27-37</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">registerWebSocketHandlers</span><span class="params">(WebSocketHandlerRegistry registry)</span> &#123;</span><br><span class="line">    <span class="comment">// 群聊端点</span></span><br><span class="line">    registry.addHandler(chatWebSocketHandler, <span class="string">&quot;/ws/chat/&#123;userId&#125;&quot;</span>)</span><br><span class="line">            .setAllowedOrigins(<span class="string">&quot;*&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 私信端点</span></span><br><span class="line">    registry.addHandler(chatWebSocketHandler, <span class="string">&quot;/ws/private/&#123;userId&#125;&quot;</span>)</span><br><span class="line">            .setAllowedOrigins(<span class="string">&quot;*&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>setAllowedOrigins(&quot;*&quot;)</code> 这个得提一句，任何站点的页面都能建这条 WS 连接，握手后的 token 校验算是最后一道身份闸了。WS 握手请求过不了 <code>JwtAuthenticationFilter</code> 的鉴权逻辑——白名单第 53 行 <code>&quot;/ws/**&quot;</code> 全放行，<strong>WS 的认证完全靠 handler 里这次自查</strong>。</p>
+<p><strong>身份提取</strong>（<code>ChatWebSocketHandler.java:342-383</code>，节选）：userId 从 URL 路径 <code>split(&quot;/&quot;)</code> 取 <code>parts[3]</code>，token 从 query string 里手挑 <code>token=</code> 前缀，<code>validateToken</code> 再拿 <code>jwtUtil.getUserIdFromToken(token)</code> 和路径里的 userId <strong>比对相等</strong>——路径写别人的 id、带自己的 token，过不去。三闸任一不过，分别 <code>close(BAD_DATA / NOT_ACCEPTABLE)</code>。</p>
+<p><strong>登记</strong>在 <code>SessionManager.java:29,37-43</code>，节选看下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Long, WebSocketSession&gt; sessions = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;&gt;();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addSession</span><span class="params">(Long userId, WebSocketSession session)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (userId == <span class="literal">null</span> || session == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    sessions.put(userId, session);</span><br></pre></td></tr></table></figure>
+
+<p>这个 <code>put</code> 是覆盖，也就是同一个 userId 底下只留最新那一根连接。域08-③ <code>205</code> 的判定：要说这是设计好的&quot;多端互踢&quot;，算不上，就是&quot;先能用后完善&quot;那一套——旧端没有收到任何 <code>kick/error</code> 通知（全仓 <code>session.close(...)</code> 四个调用点全部在 <code>afterConnectionEstablished</code> 握手失败分支，不存在&quot;因业务事件主动踢已建立连接&quot;的入口，域08-⑥ <code>350</code>）。手机和电脑同时登录，电脑后一连，<strong>手机就进入&quot;连接显示正常、消息永不到达&quot;的静默状态</strong>。</p>
+<p><strong>发送与推送</strong>（<code>ChatWebSocketHandler.java:238-298</code> + <code>MessageBroker.java:36-57</code>）：私信先 <code>privateMessageMapper.insert</code> 落库，再 <code>sendAndPush</code> 通知（图6 那条链），接收者在线才 <code>messageBroker.sendToUser</code>。Broker 的推送是 <code>CompletableFuture.runAsync</code> <strong>异步写帧</strong>：<code>sendMessage</code> 抛 IOException 时 <code>log.error</code> + <code>removeSession(userId)</code>——这个 remove 同样是按 key 删，不校验当前登记的是不是自己刚写失败的那根。域08-⑥ <code>251</code> 还点了另一处，异步链不带结果消费，<code>runAsync</code> 里 try-catch 罩不住的异常，就是&quot;把错误扔进井里&quot;。</p>
+<p><strong>离线不补推</strong>：<code>handlePrivateMessage</code> 的离线分支只有一行 <code>log.info(&quot;接收者不在线，私信已保存: receiverId=&#123;&#125;&quot;, receiverId)</code>（<code>ChatWebSocketHandler.java:293-295</code>）。接收者上线后靠<strong>前端主动拉</strong> <code>GET /api/messages/history/&#123;userId&#125;</code> 补数据。这么选，需求那边是允许的，PRD 7.6 原文写&quot;恢复后补拉 history <strong>或</strong>依赖服务端补推（实现择一，验收保证不丢可见历史）&quot;（域08-③ <code>66</code> 行引用），本项目挑的是补拉这条路。含义也说穿：&quot;只要前端漏写那一次拉取，用户就会看到消息少了，而后端日志里全是&#39;已保存&#39;&quot;。PRD 那边同时又规定发送必须走 WS、无 HTTP 兜底（功能清单 4.5 G-03，域08-② <code>49</code> 行引用），可实测 REST 侧还留着 <code>MessageController</code> 的发送端点，live 状态，域08-⑥ <code>544</code> 行判定它是&quot;live 但语义偏离规范的残留入口&quot;。用 REST 发的私信，接收者就算在线，实时推送收不到，红点也没有。</p>
+<p><strong>重连误删（这就是本图最疼的一格）</strong>：<code>afterConnectionClosed</code>（<code>ChatWebSocketHandler.java:155-162</code>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterConnectionClosed</span><span class="params">(WebSocketSession session, CloseStatus status)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">Long</span> <span class="variable">userId</span> <span class="operator">=</span> extractUserId(session);</span><br><span class="line">    <span class="keyword">if</span> (userId != <span class="literal">null</span>) &#123;</span><br><span class="line">        sessionManager.removeSession(userId);</span><br></pre></td></tr></table></figure>
+
+<p><code>removeSession(userId)</code> 只按 key 删。竞态时间线（域08-③ <code>334</code> 逐帧版）：新连接握手成功 → <code>addSession(B, 新)</code> 覆盖登记 → <strong>旧连接的 close 事件这时才到达</strong> → <code>removeSession(B)</code> 删掉的是新连接 → 之后所有 <code>isOnline(B)</code> 恒 false，前端 <code>onopen</code> 正常、欢迎消息也收到了，然后<strong>进入永久静默</strong>。修法就一行，<code>sessions.remove(userId, session)</code>，两参值匹配才删，<code>ConcurrentHashMap</code> 本来就有这个重载。只是当时没人想到&quot;同一个 userId 两根管子同时存在&quot;的时刻。</p>
+<p><strong>集群即失联</strong>：<code>sessions</code> 是堆内对象，进程间不共享。域08-⑥ <code>382</code> 原话：*&quot;这一句决定了本域<strong>当前不可水平扩容</strong>——不是&#39;性能不好&#39;，是<strong>功能会错</strong>&quot;*。更细的账在 <code>398</code>：双端登录分别落在实例1&#x2F;实例2，两个 Map 各存一份，都收得到，看着比单机互踢还&quot;爽&quot;。代价是没有单一真相源，同一个用户在不在线，得看负载均衡怎么放你这根连接。部署那边也能对上：<code>deploy</code> 里的 nginx 配置 <code>upstream zhiyuan_app</code> 就 <code>server app:8080;</code> 一条，<code>keepalive</code> 没有，<code>ip_hash</code> 也没有（域08-⑤ <code>39</code> 行实测登记）。</p>
+<p><strong>心跳</strong>：客户端发 <code>heartbeat</code>&#x2F;<code>ping</code>，服务端回 <code>pong</code>（<code>ChatWebSocketHandler.java:324-334</code>）——就是应用层一个 echo。服务端不主动探活，也没有定时器去清死会话，一根会话死了，得等下一次往里写、写失败，才知道它死了。</p>
+<h3 id="这一层的真实接线状态-6"><a href="#这一层的真实接线状态-6" class="headerlink" title="这一层的真实接线状态"></a>这一层的真实接线状态</h3><table>
+<thead>
+<tr>
+<th>机制&#x2F;代码点</th>
+<th>判定</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>握手三闸（路径 userId&#x2F;token&#x2F;比对）</td>
+<td>live</td>
+<td><code>ChatWebSocketHandler.java:58-89</code></td>
+</tr>
+<tr>
+<td>SessionManager 增删查</td>
+<td>live（单机）</td>
+<td><code>websocket/SessionManager.java</code>，全部方法有调用点</td>
+</tr>
+<tr>
+<td>群聊 broadcastToCircle</td>
+<td>live</td>
+<td><code>handleChatMessage</code> 第 219 行调用</td>
+</tr>
+<tr>
+<td>私信 REST 发送端点</td>
+<td>live 但<strong>违反 PRD 7.6 规范方向</strong></td>
+<td>域08-⑥ <code>544</code>&quot;残留入口&quot;</td>
+</tr>
+<tr>
+<td>离线服务端补推</td>
+<td><strong>不存在该实现</strong></td>
+<td>需求允许二选一，选了前端补拉（域08-③ <code>66</code>）</td>
+</tr>
+<tr>
+<td>removeSession 竞态修复（两参 remove）</td>
+<td>未做，缺陷在跑</td>
+<td>域08-③ <code>363</code> 坑表第 2 条&quot;高&quot;</td>
+</tr>
+<tr>
+<td>业务事件主动踢连接（登出&#x2F;封号下线 WS）</td>
+<td><strong>不存在任何入口</strong></td>
+<td>域08-⑥ <code>350</code></td>
+</tr>
+<tr>
+<td>markMessagesAsRead</td>
+<td>unused</td>
+<td>0 调用者（域08-④ <code>582</code>）</td>
+</tr>
+<tr>
+<td>ChatMapper.xml <code>recallMessage</code></td>
+<td>dead 且坏（status 列不存在）</td>
+<td>域08-④ <code>583</code>：&quot;死代码+坏代码叠一起&quot;</td>
+</tr>
+<tr>
+<td>getChatMessages 过滤撤回</td>
+<td>缺 <code>recalled=0</code> 条件</td>
+<td>域08-④ <code>586</code></td>
+</tr>
+<tr>
+<td>ImCacheManager 未读计数缓存</td>
+<td>orphan</td>
+<td>思路对但没接上（域08-④ <code>355</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="量化-复测入口"><a href="#量化-复测入口" class="headerlink" title="量化&#x2F;复测入口"></a>量化&#x2F;复测入口</h3><p>WS 域没有专属压测 JSON（evidence-pack 五件套里没有 ws 项），私信端到端 RT、在线率对推送延迟的影响，都没测过——【待你补充】。能复跑的验证只剩逻辑级的。起两个 WS 客户端用同一 userId 先后连接，看旧端静默、新端正常；再模拟慢 close（重连后延迟断开旧连接），看新端是不是&quot;再也收不到&quot;。这条用例在手记 ③ 的自测清单里被专门点过名，&quot;两端各自看都正常、合起来才坏&quot;，全项目就这一根连接是这样。</p>
+<hr>
+<h2 id="附录-A：本文全部量化数字的出处对照"><a href="#附录-A：本文全部量化数字的出处对照" class="headerlink" title="附录 A：本文全部量化数字的出处对照"></a>附录 A：本文全部量化数字的出处对照</h2><table>
+<thead>
+<tr>
+<th>数字</th>
+<th>内容</th>
+<th>来源文件（允许清单内）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>274→6ms &#x2F; 284→19ms</td>
+<td>帖子详情 P99 @100&#x2F;200 RPS 同机 A&#x2F;B</td>
+<td><code>evidence-pack/SUMMARY.md</code> §1</td>
+</tr>
+<tr>
+<td>6267→3 &#x2F; 12307→30</td>
+<td>每轮回源 DB 查询次数</td>
+<td><code>evidence-pack/SUMMARY.md</code> §1 · <code>matrix_post_median.csv</code></td>
+</tr>
+<tr>
+<td>5 &#x2F; 55 &#x2F; 91.7%</td>
+<td>login 60 连发放行&#x2F;拦截次数与拦截率</td>
+<td><code>evidence-pack/SUMMARY.md</code> §2 · <code>fresh_ratelimit_20260916_185953.json</code></td>
+</tr>
+<tr>
+<td>50&#x2F;50 · 39.8ms</td>
+<td>MQ 不可达时发帖成功率与平均 RT</td>
+<td><code>evidence-pack/SUMMARY.md</code> §3 · <code>fresh_mq_20260916_190531.json</code></td>
+</tr>
+<tr>
+<td>rows≈50 vs 397293 · P50 25&#x2F;P95 35ms</td>
+<td>评论列表联合索引 vs 无索引 EXPLAIN</td>
+<td><code>evidence-pack/SUMMARY.md</code> §4 · <code>fresh_explain_comment.txt</code></td>
+</tr>
+<tr>
+<td>~1.6s → 8ms · failures&#x3D;5 OPEN</td>
+<td>LLM 熔断前后单次 RT</td>
+<td><code>evidence-pack/SUMMARY.md</code> §5</td>
+</tr>
+<tr>
+<td>238 &#x2F; 41 &#x2F; 120 &#x2F; 27 &#x2F; 20</td>
+<td>模块 java 文件数 · Mapper 数 · Controller 数</td>
+<td>本文实测命令输出（find&#x2F;grep&#x2F;wc）</td>
+</tr>
+<tr>
+<td>30 实体 &#x2F; 29 @TableName</td>
+<td>models entity 计数</td>
+<td>本文实测 find&#x2F;grep</td>
+</tr>
+</tbody></table>
+<p>同机压测的数据不外推生产，<code>SUMMARY.md</code> 环境声明里写着。<code>SUMMARY.md</code> 还明写了两条表述禁令，吞吐增幅类、把本机数据说成线上表现类，这篇都没碰。</p>
+<h2 id="附录-B：九张图共同的读法提醒"><a href="#附录-B：九张图共同的读法提醒" class="headerlink" title="附录 B：九张图共同的读法提醒"></a>附录 B：九张图共同的读法提醒</h2><table>
+<thead>
+<tr>
+<th>提醒</th>
+<th>一句话展开</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图是导航不是奖状</td>
+<td>每个格子都要能被源码驳回；驳回不了才留下</td>
+</tr>
+<tr>
+<td>先查调用点再下结论</td>
+<td>live&#x2F;unused&#x2F;dead&#x2F;orphan 四态标注贯穿九图</td>
+</tr>
+<tr>
+<td>拓扑完整 ≠ 链路接通</td>
+<td>半接线（插座装好了另一头没插电）不报错，只永远不动</td>
+</tr>
+<tr>
+<td>数字带环境</td>
+<td>本机同机的 P99 是实验室值，写清复跑条件才算数</td>
+</tr>
+<tr>
+<td>死代码当反例讲</td>
+<td>FilePermissionChecker、CircleNotificationService、delayedDeleteConfig 各是一课</td>
+</tr>
+<tr>
+<td>文档会跑丢</td>
+<td>00-README 第 4 节登记的教训：docs&#x2F;全景图 曾登记三个已被删除的网关类——所以各域核对表以源码反查为准</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">HE</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/">http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Hexo</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%9F%A5%E6%BA%90Flow/">知源Flow</a><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84%E5%9B%BE/">架构图</a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a><a class="post-meta__tags" href="/tags/Mermaid/">Mermaid</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">0. 全文地图这个项目要说清楚的就三件事：它是怎么来的，为什么长成现在这个样子，有些东西为什么坚决不做。下面这张表把这几件事落在哪一节列了一遍，想跳着看的按节号翻就行。    节 讲什么 你能拿走什么    1.1 想法的来处：QQ 频道那套结构 知道这个项目最初参照的是什么   1.2 核心洞察：把有共鸣的人放进同一个圈子 知道它跟普通论坛差在哪   1.3 为什么选社区，不选电商也不选博客 知道选题的真实理由   1.4 一开始就定下的三条判断 拿到后面所有代码的动机   1.5 名字的来处 一句话事实   2.1 判断一兑现：圈子是核心，不是帖子 对应到 t_circle_base&#x2F;t_circle_member&#x2F;t_section 三张表   2.2 判断二兑现：开放 UGC 必须有审核 对应到 ContentAuditService+t_audit_record   2.3 判断三兑现：通知和私聊是命脉 对应到 NotificationPublisherImpl+双通道+/ws/private   2.4 三条判断的兑现清单 一张&quot;判断→类...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">知源 Flow 项目总览与架构设计</div></div><div class="info-2"><div class="info-item-1">全文地图：这一篇按什么顺序讲这一篇要回答的，说白了就是这仓库到底有多大、怎么分层的、选了哪些技术、哪些事是明确没干的、怎么部署、数字又是从哪来的。就这么几件事。&quot;提升了多少倍性能&quot;这种口头话全文一个都没有，我也不写这个。规模数字都是本机拿命令跑出来的，命令也照抄进正文；量化性能的数字只从 evidence-pack/ 里的文件引，引哪条标哪个文件名。仓库在你手里的话，每一行结论你都能自己复跑一遍，跑不出来再说。    章 回答什么问题 主要证据来源 能复跑的命令种类    一 产品形态在代码里长什么样 models/.../enums/EmotionType.java、PostController、PostMapper grep -rn &quot;心声&quot;   二 仓库到底多大 api/src、common/src、models/src、实战手记/ find | wc -l、wc -l、du -sh   三 三个 Maven 模块怎么分工、依赖朝哪走 4 个 pom.xml、ArchitectureBoundaryTest grep -rn &quo...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">Bug 修复全过程复盘</div></div><div class="info-2"><div class="info-item-1">开篇：一个 bug 到底该怎么复盘攒了一批 bug 复盘放在这一篇，知源 Flow，Spring Boot 3.4.1 的社区后端。写法固定成七个字段，每条 bug 都按这个顺序走完，中间不留空洞：    字段 回答什么问题 小白为什么要看这个    现象 用户 &#x2F; 接口 &#x2F; 数据库分别表现出什么 先学会&quot;描述问题&quot;，不要一上来就描述代码   定位 我用了什么命令、看了哪些文件才找到它 排查手法比结论更值钱   根因 去掉所有表象之后，那一句话的原因 区分&quot;这行写错了&quot;和&quot;我对框架的理解错了&quot;   取舍 有几种修法，为什么不选另外几种 这一步最像工程师，也最容易被跳过   实现 真实 diff &#x2F; 真实代码 看清&quot;改到位&quot;长什么样   复测 用什么证据说明它真的好了 会写测试不等于会验证   经验 这条 bug 教会我的、能搬到别的项目去的一句话 复盘的最终产物是可复用的判断   全文分三块。第一块是修掉的那批，主体落在一次提交里。第二块到今天还趴在源码里，每条都给 文件...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">0. 全文地图这个项目要说清楚的就三件事：它是怎么来的，为什么长成现在这个样子，有些东西为什么坚决不做。下面这张表把这几件事落在哪一节列了一遍，想跳着看的按节号翻就行。    节 讲什么 你能拿走什么    1.1 想法的来处：QQ 频道那套结构 知道这个项目最初参照的是什么   1.2 核心洞察：把有共鸣的人放进同一个圈子 知道它跟普通论坛差在哪   1.3 为什么选社区，不选电商也不选博客 知道选题的真实理由   1.4 一开始就定下的三条判断 拿到后面所有代码的动机   1.5 名字的来处 一句话事实   2.1 判断一兑现：圈子是核心，不是帖子 对应到 t_circle_base&#x2F;t_circle_member&#x2F;t_section 三张表   2.2 判断二兑现：开放 UGC 必须有审核 对应到 ContentAuditService+t_audit_record   2.3 判断三兑现：通知和私聊是命脉 对应到 NotificationPublisherImpl+双通道+/ws/private   2.4 三条判断的兑现清单 一张&quot;判断→类...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">核心代码的设计取舍</div></div><div class="info-2"><div class="info-item-1">开篇：这篇讲什么，怎么读这篇把知源 Flow（Spring Boot 3.4.1 的社区后端，分支 V3.0）里七个核心子系统的真实源码摊开了。一段一段讲，我自己的理解是每段就讲三件事：  这段代码在干什么（零基础也能懂，术语第一次出现就给白话解释，以及比喻）； 当时还能怎么写（没选的方案列出来，各自的坏处得说清楚）； 最后为什么选了这个、代价是什么（不美化，留下的坑就是坑，写清楚）。  先给你一张全文地图吧，七块在哪个包里、被谁调用、结论是什么，有个数。 全文地图：七个子系统一张表   章 子系统 主要文件 一句话结论 接线状态（本文口径，见下一节）    一 认证过滤器 + 白名单 api/.../config/JwtAuthenticationFilter.java 白名单不是&quot;放开一片&quot;，而是&quot;路径 + HTTP 方法&quot;两个维度一起判；代价是 4 条历史接口残留在名单里、OPTIONS 预检没短路 live·框架（@Component + 继承 OncePerRequestFilter 自动注册，全仓零手写引用）   二 Token...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">HE</div><div class="author-info-description">用代码绘制世界，用文字记录生活</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Person-HE"><i class="fab fa-github"></i><span>关注我</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的手绘博客！这里正在持续更新中...</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E6%96%87%E5%9C%B0%E5%9B%BE%EF%BC%9A%E4%B9%9D%E5%BC%A0%E5%9B%BE%E5%90%84%E5%9B%9E%E7%AD%94%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">全文地图：九张图各回答什么问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AF%E8%AF%AD%E8%A1%A8%EF%BC%9A%E6%AF%8F%E4%B8%AA%E8%AF%8D%E4%B8%80%E5%8F%A5%E7%99%BD%E8%AF%9D-%E4%B8%80%E4%B8%AA%E6%AF%94%E5%96%BB"><span class="toc-number">2.</span> <span class="toc-text">术语表：每个词一句白话 + 一个比喻</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-1%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A%E4%B8%80%E4%B8%AA%E8%AF%B7%E6%B1%82%E4%BB%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E5%88%B0%E8%90%BD%E5%BA%93%EF%BC%8C%E4%B8%80%E8%B7%AF%E7%9C%9F%E7%9A%84%E7%BB%8F%E8%BF%87%E5%93%AA%E4%BA%9B%E7%BB%84%E4%BB%B6%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">图 1｜这张图回答：一个请求从浏览器到落库，一路真的经过哪些组件？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E6%AF%8F%E4%B8%AA%E6%A0%BC%E5%AD%90%E6%98%AF%E5%93%AA%E4%B8%AA%E7%9C%9F%E5%AE%9E%E7%B1%BB"><span class="toc-number">3.1.</span> <span class="toc-text">逐节点说明：每个格子是哪个真实类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81"><span class="toc-number">3.2.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A%E5%90%AF%E5%8A%A8%E7%B1%BB%E4%B8%8E%E4%B8%BB%E9%93%BE%E8%B7%AF%E5%85%A5%E5%8F%A3"><span class="toc-number">3.3.</span> <span class="toc-text">关键源码：启动类与主链路入口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-2%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A238-41-120-%E4%B8%AA-java-%E6%96%87%E4%BB%B6%E6%98%AF%E6%80%8E%E4%B9%88%E6%91%86%E8%BF%9B%E4%B8%89%E4%B8%AA-Maven-%E6%A8%A1%E5%9D%97%E7%9A%84%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">图 2｜这张图回答：238+41+120 个 java 文件是怎么摆进三个 Maven 模块的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E6%A0%BC%E5%AD%90%E5%AF%B9%E5%BA%94%E7%9A%84%E7%9C%9F%E5%AE%9E-pom-%E5%9D%90%E6%A0%87"><span class="toc-number">4.1.</span> <span class="toc-text">逐节点说明：格子对应的真实 pom 坐标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E6%9D%A1%E9%93%BE%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%9C%9F%E7%9A%84%E8%B7%91%EF%BC%9F"><span class="toc-number">4.2.</span> <span class="toc-text">这条链什么时候真的跑？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-1"><span class="toc-number">4.3.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A%E4%B8%89%E6%AE%B5%E9%80%90%E5%AD%97%E6%8A%84%E7%9A%84-pom"><span class="toc-number">4.4.</span> <span class="toc-text">关键源码：三段逐字抄的 pom</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-3%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A%E6%B2%A1%E7%99%BB%E5%BD%95%E8%83%BD%E4%B8%8D%E8%83%BD%E8%B0%83%E6%8E%A5%E5%8F%A3%EF%BC%9F%E7%99%BB%E5%87%BA%E4%B9%8B%E5%90%8E-token-%E8%BF%98%E8%83%BD%E4%B8%8D%E8%83%BD%E7%94%A8%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">图 3｜这张图回答：没登录能不能调接口？登出之后 token 还能不能用？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E-%E5%BF%85%E9%A1%BB%E8%AE%B2%E7%A9%BF%E7%9A%84%E4%B8%80%E4%B8%AA%E6%B4%9E"><span class="toc-number">5.1.</span> <span class="toc-text">逐节点说明 + 必须讲穿的一个洞</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%81%93%E9%97%B8%E7%9A%84%E7%99%BD%E5%90%8D%E5%8D%95%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7"><span class="toc-number">5.1.1.</span> <span class="toc-text">第一道闸的白名单长什么样</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B4%9E%E5%9C%A8%E8%BF%99%E9%87%8C%EF%BC%9A%E9%BB%91%E5%90%8D%E5%8D%95%E5%8F%AA%E5%86%99%E4%B8%8D%E8%AF%BB"><span class="toc-number">5.1.2.</span> <span class="toc-text">洞在这里：黑名单只写不读</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#refresh-%E4%B9%9F%E4%B8%8D%E8%BD%AE%E6%8D%A2%E6%97%A7%E7%A5%A8"><span class="toc-number">5.1.3.</span> <span class="toc-text">refresh 也不轮换旧票</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E3%80%81%E4%B8%89%E9%81%93%E9%97%B8%E4%B8%8E%E4%B8%A4%E7%A7%8D%E7%9B%B8%E5%8F%8D%E7%9A%84%E5%A4%B1%E8%B4%A5%E5%93%B2%E5%AD%A6"><span class="toc-number">5.1.4.</span> <span class="toc-text">第二、三道闸与两种相反的失败哲学</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E6%B5%81%E8%BF%99%E5%8D%8A%E9%81%93%E9%97%B8%E7%9C%9F%E5%AE%9E%E5%AD%98%E5%9C%A8"><span class="toc-number">5.1.5.</span> <span class="toc-text">限流这半道闸真实存在</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-2"><span class="toc-number">5.2.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A401-%E7%9A%84%E5%86%99%E6%B3%95%EF%BC%88%E6%89%8B%E5%86%99-JSON%EF%BC%8C%E6%B2%A1%E6%9C%89%E8%B5%B0-Result-%E7%B1%BB%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">关键源码：401 的写法（手写 JSON，没有走 Result 类）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-4%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A-RequirePermission-%E6%B3%A8%E8%A7%A3%E6%80%8E%E4%B9%88%E6%89%BE%E5%88%B0-%E8%AF%A5%E7%94%B1%E5%93%AA%E4%B8%AA-Checker-%E5%88%A4-%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88-6-%E4%B8%AA-Checker-%E9%87%8C%E6%9C%89%E4%B8%80%E4%B8%AA%E6%B0%B8%E8%BF%9C%E6%98%AF%E6%AD%BB%E7%9A%84%EF%BC%9F"><span class="toc-number">6.</span> <span class="toc-text">图 4｜这张图回答：@RequirePermission 注解怎么找到&quot;该由哪个 Checker 判&quot;？为什么 6 个 Checker 里有一个永远是死的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%B3%A8%E5%85%A5-List-%E8%80%8C%E4%B8%8D%E6%98%AF-Map"><span class="toc-number">6.1.</span> <span class="toc-text">逐节点说明：为什么注入 List 而不是 Map</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%87%E9%9D%A2%E4%BE%A7%E6%80%8E%E4%B9%88%E5%8F%96%E5%8F%82"><span class="toc-number">6.1.1.</span> <span class="toc-text">切面侧怎么取参</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%BB%E4%BB%A3%E7%A0%81-FilePermissionChecker%EF%BC%9A%E6%B3%A8%E5%86%8C%E4%BA%86%EF%BC%8C%E4%BD%86%E6%B0%B8%E8%BF%9C%E6%94%B6%E4%B8%8D%E5%88%B0%E8%AF%B7%E6%B1%82"><span class="toc-number">6.2.</span> <span class="toc-text">死代码 FilePermissionChecker：注册了，但永远收不到请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%A7%8D%E5%AD%90%E6%95%B0%E6%8D%AE%E5%9D%91"><span class="toc-number">6.3.</span> <span class="toc-text">权限系统的种子数据坑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-3"><span class="toc-number">6.4.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9AEnumMap-%E5%A3%B0%E6%98%8E%EF%BC%88PermissionContext-java-35%EF%BC%89"><span class="toc-number">6.5.</span> <span class="toc-text">关键源码：EnumMap 声明（PermissionContext.java:35）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-5%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A%E5%B8%96%E5%AD%90%E8%AF%A6%E6%83%85-P99-%E4%BB%8E-274ms-%E9%99%8D%E5%88%B0-6ms-%E6%98%AF%E8%AF%BB%E5%93%AA%E6%9D%A1%E8%B7%AF%E5%BE%84%E8%AF%BB%E5%87%BA%E6%9D%A5%E7%9A%84%EF%BC%9F%E4%B8%89%E4%B8%AA%E9%98%B2%E9%83%BD%E9%98%B2%E4%BD%8F%E4%BA%86%E5%90%97%EF%BC%9F"><span class="toc-number">7.</span> <span class="toc-text">图 5｜这张图回答：帖子详情 P99 从 274ms 降到 6ms 是读哪条路径读出来的？三个防都防住了吗？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E7%9C%9F%E5%AE%9E%E7%B1%BB%E4%B8%8E%E7%9C%9F%E5%AE%9E%E8%A1%8C%E5%8F%B7"><span class="toc-number">7.1.</span> <span class="toc-text">逐节点说明：真实类与真实行号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81%EF%BC%88CacheConfig-%E5%B7%A5%E5%8E%82%E8%A7%86%E8%A7%92%EF%BC%8C%E5%9F%9F12-%E2%91%A1-451-462-%E8%A1%A8%E8%BD%AC%E6%8A%84%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">这一层的真实接线状态（CacheConfig 工厂视角，域12-② 451-462 表转抄）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E7%BB%93%E6%9E%9C%EF%BC%9A%E5%8F%AA%E5%BC%95%E7%94%A8%E5%8E%8B%E6%B5%8B%E5%8C%85%E9%87%8C%E6%9C%89%E7%9A%84%E6%95%B0%E5%AD%97"><span class="toc-number">7.3.</span> <span class="toc-text">量化结果：只引用压测包里有的数字</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-6%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A%E4%B8%80%E6%9D%A1-%E6%9C%89%E4%BA%BA%E8%AF%84%E8%AE%BA%E4%BA%86%E4%BD%A0-%E7%9A%84%E9%80%9A%E7%9F%A5%EF%BC%8C%E4%BB%8E%E4%B8%9A%E5%8A%A1%E4%BB%A3%E7%A0%81%E8%B5%B0%E5%88%B0%E7%BA%A2%E7%82%B9%E8%A6%81%E8%B5%B0%E5%93%AA%E5%87%A0%E6%AD%A5%EF%BC%9F%E8%B7%AF%E7%94%B1%E4%BF%AE%E5%A5%BD%E4%B9%8B%E5%90%8E-send-%E9%87%8C%E8%BF%98%E5%89%A9%E4%BB%80%E4%B9%88%E6%B4%9E%EF%BC%9F"><span class="toc-number">8.</span> <span class="toc-text">图 6｜这张图回答：一条&quot;有人评论了你&quot;的通知，从业务代码走到红点要走哪几步？路由修好之后 send() 里还剩什么洞？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%96%B9%E5%BC%8F%E4%B8%8E-%E6%B2%A1%E6%9C%89-AFTER-COMMIT-%E7%9A%84%E7%9C%9F%E8%AF%9D"><span class="toc-number">8.1.</span> <span class="toc-text">逐节点说明：触发方式与&quot;没有 AFTER_COMMIT&quot;的真话</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%A8%E9%9D%A2%E7%9A%84%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="toc-number">8.1.1.</span> <span class="toc-text">门面的路由表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#send-%E5%BE%AA%E7%8E%AF%E7%9A%84%E6%B4%9E"><span class="toc-number">8.1.2.</span> <span class="toc-text">send() 循环的洞</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E9%80%9A%E9%81%93%E4%BA%92%E8%A1%A5"><span class="toc-number">8.1.3.</span> <span class="toc-text">双通道互补</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sendAndPush-%E7%9A%84%E5%8F%8C%E6%8E%A8"><span class="toc-number">8.1.4.</span> <span class="toc-text">sendAndPush 的双推</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81%EF%BC%88%E5%9F%9F09-%E2%91%A0-108-111-%E5%88%A4%E5%AE%9A%E8%A1%A8-%E9%80%90-Handler-%E6%AD%BB%E6%B4%BB%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">这一层的真实接线状态（域09-① 108-111 判定表 + 逐 Handler 死活）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9Avalidate-%E7%9A%84%E4%BA%92%E6%96%A5%E6%A0%A1%E9%AA%8C%EF%BC%88NotificationPublisherImpl-java-207-220%EF%BC%8C%E8%8A%82%E9%80%89%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">关键源码：validate 的互斥校验（NotificationPublisherImpl.java:207-220，节选）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-7%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A-api-ai-%E7%9A%84%E4%B8%80%E5%A0%86%E7%AB%AF%E7%82%B9%E8%83%8C%E5%90%8E%EF%BC%8C8-%E4%B8%AA-AgentType-%E8%B0%81%E7%9C%9F%E6%9C%89-handler%EF%BC%9F%E7%86%94%E6%96%AD%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E8%A2%AB%E8%87%AA%E5%B7%B1%E7%9A%84%E9%99%8D%E7%BA%A7%E5%93%8D%E5%BA%94%E6%B8%85%E9%9B%B6%EF%BC%9F"><span class="toc-number">9.</span> <span class="toc-text">图 7｜这张图回答：&#x2F;api&#x2F;ai 的一堆端点背后，8 个 AgentType 谁真有 handler？熔断为什么会被自己的降级响应清零？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A8-5-3-%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E8%B4%A6"><span class="toc-number">9.1.</span> <span class="toc-text">逐节点说明：8&#x2F;5&#x2F;3 三个数的账</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-4"><span class="toc-number">9.2.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E7%BB%93%E6%9E%9C"><span class="toc-number">9.3.</span> <span class="toc-text">量化结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-8%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9AMQ-%E6%8B%93%E6%89%91%E6%9C%89-4-%E4%B8%AA%E4%BA%A4%E6%8D%A2%E6%9C%BA-8-%E4%B8%AA%E9%98%9F%E5%88%97-4-%E4%B8%AA%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AE%9E%E6%B5%8B%E7%BB%93%E8%AE%BA%E6%98%AF-%E4%B8%BB%E9%93%BE%E8%B7%AF%E4%B8%8D%E4%BE%9D%E8%B5%96%E5%AE%83-%EF%BC%9F"><span class="toc-number">10.</span> <span class="toc-text">图 8｜这张图回答：MQ 拓扑有 4 个交换机 8 个队列 4 个消费者，为什么实测结论是&quot;主链路不依赖它&quot;？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E4%B8%89%E5%A4%84%E7%94%9F%E4%BA%A7%E3%80%81%E5%9B%9B%E5%A4%84%E6%B6%88%E8%B4%B9%E3%80%81%E4%B8%80%E6%9D%A1%E7%9C%9F%E9%93%BE"><span class="toc-number">10.1.</span> <span class="toc-text">逐节点说明：三处生产、四处消费、一条真链</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#MQ-%E6%80%BB%E5%BC%80%E5%85%B3%EF%BC%9A%E6%95%B4%E5%B1%82%E6%9D%A1%E4%BB%B6%E8%A3%85%E9%85%8D"><span class="toc-number">10.1.1.</span> <span class="toc-text">MQ 总开关：整层条件装配</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%94%AF%E4%B8%80%E7%9A%84%E5%8F%91%E9%80%81%E7%82%B9"><span class="toc-number">10.1.2.</span> <span class="toc-text">唯一的发送点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-5"><span class="toc-number">10.2.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E7%BB%93%E6%9E%9C-1"><span class="toc-number">10.3.</span> <span class="toc-text">量化结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE-9%EF%BD%9C%E8%BF%99%E5%BC%A0%E5%9B%BE%E5%9B%9E%E7%AD%94%EF%BC%9A%E7%A7%81%E4%BF%A1%E4%BB%8E%E6%8F%A1%E6%89%8B%E5%88%B0%E9%80%81%E8%BE%BE%E7%9A%84%E6%AF%8F%E4%B8%80%E6%AD%A5%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F-%E6%89%A9%E5%AE%B9%E5%8D%B3%E5%A4%B1%E8%81%94-%E5%92%8C-%E9%87%8D%E8%BF%9E%E8%AF%AF%E5%88%A0%E6%96%B0%E8%BF%9E%E6%8E%A5-%E5%90%84%E5%8F%91%E7%94%9F%E5%9C%A8%E5%93%AA%E4%B8%80%E6%A0%BC%EF%BC%9F"><span class="toc-number">11.</span> <span class="toc-text">图 9｜这张图回答：私信从握手到送达的每一步是什么？&quot;扩容即失联&quot;和&quot;重连误删新连接&quot;各发生在哪一格？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%8A%82%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A%E6%8F%A1%E6%89%8B%E5%9B%9B%E6%AD%A5%E4%B8%8E%E6%AF%8F%E6%AD%A5%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%9D%A1%E4%BB%B6"><span class="toc-number">11.1.</span> <span class="toc-text">逐节点说明：握手四步与每步的真实条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E5%B1%82%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E7%BA%BF%E7%8A%B6%E6%80%81-6"><span class="toc-number">11.2.</span> <span class="toc-text">这一层的真实接线状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96-%E5%A4%8D%E6%B5%8B%E5%85%A5%E5%8F%A3"><span class="toc-number">11.3.</span> <span class="toc-text">量化&#x2F;复测入口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95-A%EF%BC%9A%E6%9C%AC%E6%96%87%E5%85%A8%E9%83%A8%E9%87%8F%E5%8C%96%E6%95%B0%E5%AD%97%E7%9A%84%E5%87%BA%E5%A4%84%E5%AF%B9%E7%85%A7"><span class="toc-number">12.</span> <span class="toc-text">附录 A：本文全部量化数字的出处对照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95-B%EF%BC%9A%E4%B9%9D%E5%BC%A0%E5%9B%BE%E5%85%B1%E5%90%8C%E7%9A%84%E8%AF%BB%E6%B3%95%E6%8F%90%E9%86%92"><span class="toc-number">13.</span> <span class="toc-text">附录 B：九张图共同的读法提醒</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘">Bug 修复全过程复盘</a><time datetime="2026-09-17T02:50:00.000Z" title="发表于 2026-09-17 10:50:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍">核心代码的设计取舍</a><time datetime="2026-09-17T02:40:00.000Z" title="发表于 2026-09-17 10:40:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉">项目起源与设计初衷：知源 Flow 社区的来龙去脉</a><time datetime="2026-09-17T02:30:00.000Z" title="发表于 2026-09-17 10:30:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/" title="项目全景图：9 张图看懂知源 Flow">项目全景图：9 张图看懂知源 Flow</a><time datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计">知源 Flow 项目总览与架构设计</a><time datetime="2026-09-17T02:10:00.000Z" title="发表于 2026-09-17 10:10:00">2026-09-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By HE</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="/js/tw_cn.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
   console.log('[Mermaid] Script loaded, setting up event listeners')
 
   const runMermaid = async ele => {
