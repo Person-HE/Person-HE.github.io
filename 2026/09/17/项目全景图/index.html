@@ -1,0 +1,552 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>项目全景图：9 张图看懂知源 Flow | Hexo</title><meta name="author" content="HE"><meta name="copyright" content="HE"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。 1. 总览，请求从浏览器到落库1234567891011121314151617181920212">
+<meta property="og:type" content="article">
+<meta property="og:title" content="项目全景图：9 张图看懂知源 Flow">
+<meta property="og:url" content="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。 1. 总览，请求从浏览器到落库1234567891011121314151617181920212">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.png">
+<meta property="article:published_time" content="2026-09-17T02:20:00.000Z">
+<meta property="article:modified_time" content="2026-09-28T03:01:45.252Z">
+<meta property="article:author" content="HE">
+<meta property="article:tag" content="知源Flow">
+<meta property="article:tag" content="架构图">
+<meta property="article:tag" content="系统设计">
+<meta property="article:tag" content="Mermaid">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "项目全景图：9 张图看懂知源 Flow",
+  "url": "http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/",
+  "image": "http://example.com/img/avatar.png",
+  "datePublished": "2026-09-17T02:20:00.000Z",
+  "dateModified": "2026-09-28T03:01:45.252Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "HE",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/index.html"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://unpkg.com/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '项目全景图：9 张图看懂知源 Flow',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/hand-drawn.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">43</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">项目全景图：9 张图看懂知源 Flow</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%BF%83%E5%BE%97%E9%9A%8F%E7%AC%94/"><i class="fa-fw fas fa-pen-fancy"></i><span> 心得随笔</span></a></div><div class="menus_item"><a class="site-page" href="/categories/AI/"><i class="fa-fw fas fa-ai"></i><span> AI</span></a></div><div class="menus_item"><a class="site-page" href="/categories/java%E5%90%8E%E7%AB%AF/"><i class="fa-fw fas fa-java"></i><span> java后端</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E5%8E%9F%E7%90%86%E5%88%A8%E6%9E%90/"><i class="fa-fw fas fa-core"></i><span> 原理刨析</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E7%AE%97%E6%B3%95/"><i class="fa-fw fas fa-algorithm"></i><span> 算法</span></a></div><div class="menus_item"><a class="site-page" href="/categories/%E6%88%91%E7%9A%84%E4%BA%A7%E5%93%81/"><i class="fa-fw fas fa-box-open"></i><span> 我的产品</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">项目全景图：9 张图看懂知源 Flow</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-28T03:01:45.252Z" title="更新于 2026-09-28 11:01:45">2026-09-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%A1%B9%E7%9B%AE%E6%84%9F%E6%82%9F/">项目感悟</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><p>这一版把九张图全部重画了。旧图里有几处画的是&quot;我希望它长这样&quot;，比如缓存图里我画了 Lua 原子释放锁，翻源码才发现释放就是一个裸 delete，哪来的 Lua。图这种东西最容易骗人，因为画完就没人再对一遍。所以这次每张图底下都标了哪些格子是好的、哪些是坏的，坏的用注释写在图里。</p>
+<h1 id="1-总览，请求从浏览器到落库"><a href="#1-总览，请求从浏览器到落库" class="headerlink" title="1. 总览，请求从浏览器到落库"></a>1. 总览，请求从浏览器到落库</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TB
+    Browser["浏览器 / 移动端"]
+
+    subgraph Backend["Spring Boot 3.4.1 单体 (8080) 无网关, 网关模块已删除"]
+        Filter["JwtAuthenticationFilter
+白名单精确路径 + 解析 claims 进 UserContext
+注意: 不查黑名单, 黑名单只写不读"]
+        Controller["Controller 20 个
+Auth/User/Circle/Emotion/Post/Comment/Section/
+Announcement/Message/Notification/File/
+AiChat/AiCompanion/AiDiscover/AiDigest/CircleAi/Rag 等"]
+        Aspect["AOP 切面 3 个
+Permission 限流 操作日志, 叠加无 Order"]
+        Service["Service"]
+        Cache["MultiLevelCache
+L1 Caffeine, L2 Redis, L3 MySQL"]
+        Mapper["Mapper 27 个 MyBatis-Plus"]
+        MQ["RabbitMQ 可开关
+默认关, 4 Exchange 里 3 个事件没生产者"]
+        WS["WebSocket Handler
+Session 是单机 Map"]
+        AI["AI 纵队
+companion agent audit discover digest rag"]
+        Controller --> Aspect
+        Aspect --> Service
+        Service --> Cache
+        Cache --> Mapper
+        Service --> MQ
+        Service --> WS
+        Service --> AI
+    end
+
+    MySQL["MySQL 8 db zhiyuan 3306"]
+    Redis["Redis 6379
+缓存 限流 token 计数"]
+    Rabbit["RabbitMQ
+RABBITMQ_ENABLED 默认 false"]
+    LLM["LLM 网关
+LangChain4j, OpenAI 兼容协议
+坏 Key 时熔断实测 8ms"]
+
+    Browser -->|HTTP / WS| Filter
+    Filter --> Controller
+    Mapper --> MySQL
+    Cache --> Redis
+    MQ --> Rabbit
+    AI --> LLM
+</pre></div>
+
+<p>一句话：请求先过 Filter（认证闸），进 Controller 穿过三个切面，Service 在缓存、MQ、WS、AI 之间调度。没有网关层，早删了，那玩意一共就活了三十七天。</p>
+<h1 id="2-Maven-三模块，依赖单向"><a href="#2-Maven-三模块，依赖单向" class="headerlink" title="2. Maven 三模块，依赖单向"></a>2. Maven 三模块，依赖单向</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart LR
+    Parent["父 pom
+com.zhiyuanflow
+Java 17, Boot 3.4.1
+mybatis-plus 3.5.5, jjwt 0.12.3
+caffeine 3.1.8, langchain4j 1.0.0-beta3"]
+    Models["models 120 个 java
+entity 30 个, 29 个带 TableName
+dto, vo, enums, tree"]
+    Common["common 41 个 java
+Result, 全局异常, JwtUtil
+AesUtil, 邮件, 文件存储策略"]
+    API["api 238 个 java
+controller service mapper
+cache aspect permission
+mq websocket notification ai"]
+
+    Parent --> Models
+    Parent --> Common
+    Parent --> API
+    API -->|依赖| Common
+    Common -->|依赖| Models
+</pre></div>
+
+<p>依赖方向是物理约束，反向编译不过去。这是整个项目里我最满意的一个设计，就因为它不需要自觉。</p>
+<h1 id="3-认证鉴权三道防线"><a href="#3-认证鉴权三道防线" class="headerlink" title="3. 认证鉴权三道防线"></a>3. 认证鉴权三道防线</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    Request["浏览器请求"]
+    subgraph First["第一道 JwtAuthenticationFilter"]
+        WL["白名单精确路径
+auth 五件套, posts 的 hot list search share
+circles 的 list search detail sections members 等
+文件仅 GET/HEAD 匿名, AI 仅 hot-digest 和 explain 匿名
+ws 全放行"]
+        Parse["非白名单: Bearer 取 token
+解析 userId 进 UserContext
+失败回 401, finally 必清 ThreadLocal"]
+        WL -->|命中| Pass["放行, 带 token 顺带解析身份"]
+        WL -->|未命中| Parse
+    end
+    subgraph Second["第二道 PermissionAspect"]
+        Anno["拦截带 RequirePermission 的方法
+resource action resourceIdParamName relatedId"]
+        Route["PermissionContext 按资源类型路由
+找不到 checker 返回 false, fail-closed"]
+        Anno --> Route
+    end
+    subgraph Third["第三道 Service 层"]
+        Biz["业务校验, 状态机 资源存在性
+BusinessException"]
+    end
+    Request --> First
+    Pass --> Ctrl["Controller"]
+    Parse -->|通过| Second
+    Route -->|通过| Third
+    Biz --> Ctrl
+</pre></div>
+
+<p>这里有个图上看不到但必须说的洞：登出后 token 写进 Redis 黑名单，但过滤器不查黑名单，所以&quot;吊销&quot;只做了一半，剩余有效期内 token 照样能用。旧图我在 Filter 那一格写了&quot;+ 黑名单&quot;，那是我以为，源码里 0 命中。</p>
+<h1 id="4-权限策略路由，6-个-Checker"><a href="#4-权限策略路由，6-个-Checker" class="headerlink" title="4. 权限策略路由，6 个 Checker"></a>4. 权限策略路由，6 个 Checker</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    C["方法上的 RequirePermission 注解"]
+    A["PermissionAspect 反射取参数"]
+    P["PermissionContext
+注入 List 再自建 EnumMap
+key 自己说了算"]
+    CK1["CirclePermissionChecker"]
+    CK2["PostPermissionChecker"]
+    CK3["CommentPermissionChecker"]
+    CK4["SectionPermissionChecker"]
+    CK5["AnnouncementPermissionChecker"]
+    CK6["FilePermissionChecker
+注册了, 但永远收不到请求, 死代码"]
+    FC["fail-closed: 查不到 checker 直接拒绝"]
+
+    C --> A --> P
+    P --> CK1
+    P --> CK2
+    P --> CK3
+    P --> CK4
+    P --> CK5
+    P --> CK6
+    P --> FC
+</pre></div>
+
+<p>为什么注入 List 不注入 Map：吃过亏。通知系统那次 <code>Map&lt;String, Handler&gt;</code> 注入，key 是 Bean 名不是我给的业务类型码，路由全线失效还不报错。现在这张图这么画，就是那次先撞过。</p>
+<p>FilePermissionChecker 为什么是死的：<code>deleteFile</code> 的注解把资源类型写成了 POST，请求全被路由到 PostPermissionChecker，拿文件 id 去帖子表查归属，谁的帖子 id 恰好撞上文件 id 谁就能删别人的文件。注册表里的格子存在，不等于有请求走得到。</p>
+<h1 id="5-多级缓存读路径"><a href="#5-多级缓存读路径" class="headerlink" title="5. 多级缓存读路径"></a>5. 多级缓存读路径</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    Start["MultiLevelCache.get"]
+    BY{"cache.bypass 开关?"}
+    L1["L1 Caffeine"]
+    L1H{"命中?"}
+    L2["L2 Redis"]
+    L2H{"命中?"}
+    NP{"NULL 占位符?"}
+    Lock["SETNX 抢锁, 值写死 1"]
+    LS{"抢到?"}
+    Wait["睡 50ms 回查 L2
+还没有就自己查库"]
+    L3["查 MySQL"]
+    Has{"有值?"}
+    PutNull["Redis 写 NULL 占位
+TTL 取原 TTL 的一成, 下限 10 秒"]
+    Put["写 Redis 加 jitter, 回写 L1"]
+    Rel["releaseLock: 裸 delete
+没有 token 没有校验, 可能删别人的锁"]
+
+    Start --> BY
+    BY -->|true 直查库| L3
+    BY -->|false| L1
+    L1 --> L1H
+    L1H -->|hit 返回| R1["返回"]
+    L1H -->|miss| L2
+    L2 --> L2H
+    L2H -->|hit| RB["回写 L1 返回"]
+    L2H -->|miss| NP
+    NP -->|是 返回 null| R2["返回 null"]
+    NP -->|否| Lock
+    Lock --> LS
+    LS -->|失败| Wait
+    LS -->|成功 锁内双重检查再回源| L3
+    L3 --> Has
+    Has -->|null| PutNull
+    Has -->|有值| Put
+    Put --> Rel
+    PutNull --> Rel
+</pre></div>
+
+<p>三个防是真的：空值占位防穿透，锁防击穿，jitter 防雪崩。但 L1 不吃传入 TTL（所有 L1 条目用同一个过期），锁释放不校验持有者，这两个洞都在。100 RPS 下 P99 274ms 对 6ms、回源 6267 对 3，是本机同机 A&#x2F;B 测的，数字在 <code>evidence-pack/SUMMARY.md</code>。</p>
+<h1 id="6-通知，门面加策略加双通道"><a href="#6-通知，门面加策略加双通道" class="headerlink" title="6. 通知，门面加策略加双通道"></a>6. 通知，门面加策略加双通道</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    B["业务 Service"]
+    E["事务提交后事件
+TransactionalEventListener AFTER_COMMIT"]
+    Pub["NotificationPublisherImpl
+PostConstruct 按 getSupportedTypes 自建路由表
+修好后长这样, 之前用 Map 注入全瞎"]
+    H1["InteractionHandler
+post_comment post_like 等"]
+    H2["CircleHandler
+circle_join kick disband"]
+    H3["AnnouncementHandler"]
+    H4["MessageHandler"]
+    H5["SystemHandler 兜底"]
+    Ch1["DatabasePushChannel 落库"]
+    Ch2["WebSocketPushChannel 在线推"]
+    F["前端角标, 离线下次拉"]
+
+    B --> E --> Pub
+    Pub --> H1
+    Pub --> H2
+    Pub --> H3
+    Pub --> H4
+    Pub --> H5
+    H1 --> Ch1
+    H1 --> Ch2
+    Ch1 --> F
+    Ch2 --> F
+</pre></div>
+
+<p>路由修好了，<code>send()</code> 里还有洞：循环里逐人 try，通道推失败日志打了，successCount 照样加一。数字会说谎，日志才是事实源。</p>
+<h1 id="7-AI-纵队"><a href="#7-AI-纵队" class="headerlink" title="7. AI 纵队"></a>7. AI 纵队</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    In["POST api/ai/chat 走路由
+POST api/ai/companion/stream 走 SSE
+POST api/ai/discover 走发现"]
+    R["AgentRouter
+LLM 选路加关键词兜底
+8 个 AgentType, 真接线的 handler 只有 3 个"]
+    K["客服: customerServiceAgent"]
+    Q["知识库: FAQ 内存向量库
+maxResults 3, minScore 0.7"]
+    Cp["情绪陪伴: 危机词闸加滑窗加摘要
+SSE 真流式"]
+    Ci["圈子助手: 只带当前圈上下文"]
+    Dc["内容发现: 意图解析 混合召回 重排"]
+    Au["内容审核: 规则加 AI 落审计表
+后端旁路, 无用户入口"]
+    FB["熔断加降级
+坑: 降级响应 success 是 true
+把自己的熔断计数清零"]
+
+    In --> R
+    R --> K
+    R --> Q
+    R --> Cp
+    R --> Ci
+    R --> Dc
+    R --> Au
+    K --> FB
+    Cp --> FB
+</pre></div>
+
+<p>实测过熔断：故意配坏 Key 连打，前 5 次每次约 1.6 秒，第 6 次开始 8ms。但那批 50&#x2F;50 的数字里混着 41 次 403，真凶是权限注解不是限流，误诊还被我写进了脚本注释——这种账也得画进图里，不然就只剩好话了。</p>
+<h1 id="8-MQ-消息流"><a href="#8-MQ-消息流" class="headerlink" title="8. MQ 消息流"></a>8. MQ 消息流</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>flowchart TD
+    E1["PostCreatedEvent"]
+    E2["CommentCreatedEvent"]
+    E3["PostAuditEvent"]
+    E4["CounterSyncEvent"]
+    T["@TransactionalEventListener AFTER_COMMIT
+发送失败业务层 try-catch 降级直连"]
+    X1["post exchange"]
+    X2["comment exchange"]
+    X3["audit exchange"]
+    X4["counter exchange
+3 个事件 0 生产者"]
+    C1["PostNotificationConsumer"]
+    C2["CommentNotificationConsumer"]
+    C3["PostAuditConsumer"]
+    C4["CounterSyncConsumer"]
+    DLX["死信队列"]
+
+    E1 --> T --> X1 --> C1
+    E2 --> T --> X2 --> C2
+    E3 --> T --> X3 --> C3
+    E4 --> T --> X4 --> C4
+    C1 --> DLX
+    C2 --> DLX
+</pre></div>
+
+<p>MQ 默认整个关着，<code>RABBITMQ_ENABLED=false</code>。关着的时候发帖实测 50&#x2F;50 成功、平均 39.8ms，证明主链路不依赖它。拓扑图好看，生产者三缺一，这个格子永远是空的。</p>
+<h1 id="9-WebSocket-私信时序"><a href="#9-WebSocket-私信时序" class="headerlink" title="9. WebSocket 私信时序"></a>9. WebSocket 私信时序</h1><div class="mermaid-wrap"><pre class="mermaid-src" hidden>sequenceDiagram
+    participant B as 浏览器
+    participant H as ChatWebSocketHandler
+    participant S as SessionManager
+    participant DB as MySQL
+
+    B->>H: 连 ws chat 路径带 token
+    H->>H: 校验 token
+    H->>S: register userId 到单机 ConcurrentHashMap
+    H-->>B: 握手成功
+    B->>H: 发消息
+    H->>DB: 落库
+    H->>S: send 或 broadcast
+    S-->>B: 推送
+    Note over S: 扩容即失联, 会话只在单进程堆里
+    B->>H: 断线重连
+    H->>S: removeSession 只按 key 删
+    Note over S: 旧连接关闭事件晚到, 会误删新连接登记
+</pre></div>
+
+<p>产品规矩是私信发送强制走 WS，禁止 HTTP 兜底发送，这条写在需求 7.6 里，理由是静默降级会把故障从可见变成不可见。技术上在线表就是个 HashMap 级别的单机真相，多端互踢和重连误删都还活着。</p>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>九张图，每张都比旧版少画了一点功劳、多标了一点窟窿。全景图这玩意儿在我这儿翻过车，仓库里那套 docs&#x2F;全景图 登记过三个网关类，源码里早删干净了，文档跑在代码前面，然后又跑丢了。所以现在图只当导航用，里面每句话都得能被源码驳回。驳回就驳回，源码赢是天经地义的，我自己都不接受这一条的话，别的就更没什么好讲的了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">HE</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/">http://example.com/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Hexo</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%9F%A5%E6%BA%90Flow/">知源Flow</a><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84%E5%9B%BE/">架构图</a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a><a class="post-meta__tags" href="/tags/Mermaid/">Mermaid</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">这篇也重写。旧版发出去之后我把仓库从头读了一遍，读完发现起源还是那个起源，但里面几处我当时讲高了，什么&quot;完整三防&quot;&quot;吊销机制&quot;，还有 git 历史这件事我一直没提过。先讲起源，再讲哪些是真想清楚了、哪些是后来才看明白的，看明白得晚的也不少。 为什么做这个我之前写过不少练手项目，登录、增删改查、表单管理、SSM 单体，全是那种一眼看得穿的管理系统。真正让我下决心重做一个的，不是又想写新项目了，是发现手里这些东西撑不起一个后端该有的厚度，简历上排不开，面试讲不出第二层。 起点是 QQ 频道，圈子加分区那套组织方式，我觉得那个结构天然适合把人放在一起说话。后来刷抖音，看评论区，算法把爱好相同的人聚到同一条内容底下，满屏都是&quot;有人懂我&quot;&quot;终于有真实反馈了&quot;这类话。我就想，把有共鸣的人放进同一个圈子，&quot;懂我&quot;这件事能不能不用用户自己去茫茫内容里捞，让它自己发生。 于是有了 zhiyuan_Flow，现在叫知源 Flow。 为什么不选电商不选博客，选社区——因为我真的天天刷社区。哪个环节让人想...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">知源 Flow 项目总览与架构设计</div></div><div class="info-2"><div class="info-item-1">这篇重写了一遍。上一版是对着 README 写的，后来我把整个仓库从头逐行翻了一遍，切成十七个域，一个域六篇文档，翻完回头看旧文章，有几个说法是给自己脸上贴金的，没别的话讲。现在按真实的来。 这个项目是什么知源 Flow 是一个社区后端，想法来自 QQ 频道，圈子、分区、发帖那一套。做到 V3.0 收敛成了别的样子：首页不是帖子列表，是情绪地图；帖子在这里叫心声，评论区叫共鸣墙，点赞旁边有个抱抱。核心链路是情绪地图进圈子，发心声，别人共鸣，抱抱和评论推通知，通知带私信，AI 陪伴和推荐挂在外面一圈做增益。 技术形态上它是 Spring Boot 3.4.1 的单体后端，Java 17，三个 Maven 模块。不是微服务。微服务那部分我真做过，后来整个删掉了，后面讲。 规模，给能复现的口径简历上写规模最喜欢含糊，我这次不含糊，每个数都给统计命令，谁都可以自己去仓库数。    项 数 怎么数出来的    Maven 模块 3 个 models &#x2F; common &#x2F; api，依赖方向 api → common → models   Java 文件 399 个（api...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">核心代码的设计取舍</div></div><div class="info-2"><div class="info-item-1">这篇旧版是我对着记忆写的，里面有一段&quot;Lua 脚本原子释放锁&quot;，配了完整脚本，写得很漂亮。这次逐行翻源码，releaseLock 实际长这样： 123private void releaseLock(String lockKey) &#123;    stringRedisTemplate.delete(lockKey);&#125;  一行，裸删，没有 token，没有校验，锁过期慢了一步就会删掉别人刚加的锁。所以这一版所有取舍都按源码现在的样子讲，包括讲我自己把没做的事写成做过的事的那几处。代码全是仓库里的原文，路径都给你。 1. JwtAuthenticationFilter：白名单宁紧勿松api/.../config/JwtAuthenticationFilter.java，全项目每个请求都要穿它。 123456789101112131415161718192021222324private static final List&lt;String&gt; WHITE_LIST = List.of(        &quot;/api/auth/logi...</div></div></div></a><a class="pagination-related" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">Bug 修复全过程复盘</div></div><div class="info-2"><div class="info-item-1">旧版这篇发布的时候，我以为是在复盘&quot;我修过的 bug&quot;。后来把整个仓库逐域读了一遍才意识到，这个叙述只覆盖了一半——另一半 bug 根本没被修，它们今天还在源码里活着，而且大部分活得很好。这篇重写版就按这两半讲。 那次修复：一条提交记录说 14 个，正文只列了 13 个2026-06-28，提交 b183b68，标题是「fix: 修复通知系统、AI审核、图片上传、帖子交互等14个核心bug」。正文分四组列了 13 条，第 14 条其实是末尾那句「同时清理了未使用的gateway&#x2F;services模块和文档文件」。数字口径本身就是个 bug，这个细节旧版我没敢写。那次提交的 stat 是 88 个文件，+803 行，-6643 行，删掉的比修掉的多了八倍。 四组 bug 挨个说。 通知系统是重灾区，五条连着一条链。NotificationPublisherImpl 里注入的是 Map&lt;String, NotificationHandler&gt;，我一直以为 Map 的 key 是业务类型码，其实 Spring 给的是 Bean 名，handle...</div></div></div></a><a class="pagination-related" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-17</div><div class="info-item-2">项目起源与设计初衷：知源 Flow 社区的来龙去脉</div></div><div class="info-2"><div class="info-item-1">这篇也重写。旧版发出去之后我把仓库从头读了一遍，读完发现起源还是那个起源，但里面几处我当时讲高了，什么&quot;完整三防&quot;&quot;吊销机制&quot;，还有 git 历史这件事我一直没提过。先讲起源，再讲哪些是真想清楚了、哪些是后来才看明白的，看明白得晚的也不少。 为什么做这个我之前写过不少练手项目，登录、增删改查、表单管理、SSM 单体，全是那种一眼看得穿的管理系统。真正让我下决心重做一个的，不是又想写新项目了，是发现手里这些东西撑不起一个后端该有的厚度，简历上排不开，面试讲不出第二层。 起点是 QQ 频道，圈子加分区那套组织方式，我觉得那个结构天然适合把人放在一起说话。后来刷抖音，看评论区，算法把爱好相同的人聚到同一条内容底下，满屏都是&quot;有人懂我&quot;&quot;终于有真实反馈了&quot;这类话。我就想，把有共鸣的人放进同一个圈子，&quot;懂我&quot;这件事能不能不用用户自己去茫茫内容里捞，让它自己发生。 于是有了 zhiyuan_Flow，现在叫知源 Flow。 为什么不选电商不选博客，选社区——因为我真的天天刷社区。哪个环节让人想...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">HE</div><div class="author-info-description">用代码绘制世界，用文字记录生活</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">43</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Person-HE"><i class="fab fa-github"></i><span>关注我</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的手绘博客！这里正在持续更新中...</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%80%BB%E8%A7%88%EF%BC%8C%E8%AF%B7%E6%B1%82%E4%BB%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E5%88%B0%E8%90%BD%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">1. 总览，请求从浏览器到落库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Maven-%E4%B8%89%E6%A8%A1%E5%9D%97%EF%BC%8C%E4%BE%9D%E8%B5%96%E5%8D%95%E5%90%91"><span class="toc-number">2.</span> <span class="toc-text">2. Maven 三模块，依赖单向</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%89%E9%81%93%E9%98%B2%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">3. 认证鉴权三道防线</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E6%9D%83%E9%99%90%E7%AD%96%E7%95%A5%E8%B7%AF%E7%94%B1%EF%BC%8C6-%E4%B8%AA-Checker"><span class="toc-number">4.</span> <span class="toc-text">4. 权限策略路由，6 个 Checker</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E8%AF%BB%E8%B7%AF%E5%BE%84"><span class="toc-number">5.</span> <span class="toc-text">5. 多级缓存读路径</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-%E9%80%9A%E7%9F%A5%EF%BC%8C%E9%97%A8%E9%9D%A2%E5%8A%A0%E7%AD%96%E7%95%A5%E5%8A%A0%E5%8F%8C%E9%80%9A%E9%81%93"><span class="toc-number">6.</span> <span class="toc-text">6. 通知，门面加策略加双通道</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-AI-%E7%BA%B5%E9%98%9F"><span class="toc-number">7.</span> <span class="toc-text">7. AI 纵队</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-MQ-%E6%B6%88%E6%81%AF%E6%B5%81"><span class="toc-number">8.</span> <span class="toc-text">8. MQ 消息流</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-WebSocket-%E7%A7%81%E4%BF%A1%E6%97%B6%E5%BA%8F"><span class="toc-number">9.</span> <span class="toc-text">9. WebSocket 私信时序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E"><span class="toc-number">10.</span> <span class="toc-text">最后</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/Bug%E4%BF%AE%E5%A4%8D%E5%85%A8%E8%BF%87%E7%A8%8B%E5%A4%8D%E7%9B%98/" title="Bug 修复全过程复盘">Bug 修复全过程复盘</a><time datetime="2026-09-17T02:50:00.000Z" title="发表于 2026-09-17 10:50:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8F%96%E8%88%8D/" title="核心代码的设计取舍">核心代码的设计取舍</a><time datetime="2026-09-17T02:40:00.000Z" title="发表于 2026-09-17 10:40:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E8%B5%B7%E6%BA%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%88%9D%E8%A1%B7/" title="项目起源与设计初衷：知源 Flow 社区的来龙去脉">项目起源与设计初衷：知源 Flow 社区的来龙去脉</a><time datetime="2026-09-17T02:30:00.000Z" title="发表于 2026-09-17 10:30:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E5%9B%BE/" title="项目全景图：9 张图看懂知源 Flow">项目全景图：9 张图看懂知源 Flow</a><time datetime="2026-09-17T02:20:00.000Z" title="发表于 2026-09-17 10:20:00">2026-09-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/17/%E7%9F%A5%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%80%BB%E8%A7%88%E5%92%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" title="知源 Flow 项目总览与架构设计">知源 Flow 项目总览与架构设计</a><time datetime="2026-09-17T02:10:00.000Z" title="发表于 2026-09-17 10:10:00">2026-09-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By HE</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="/js/tw_cn.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  console.log('[Mermaid] Script loaded, setting up event listeners')
+
+  const runMermaid = async ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    for (let i = 0; i < ele.length; i++) {
+      const item = ele[i]
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+
+      const mermaidID = `mermaid-${Date.now()}-${i}`
+      const mermaidDefinition = mermaidSrc.textContent
+
+      console.log('[Mermaid] Rendering diagram:', mermaidID)
+      console.log('[Mermaid] Definition preview:', mermaidDefinition.substring(0, 80))
+
+      try {
+        const result = await mermaid.render(mermaidID, mermaidDefinition)
+        console.log('[Mermaid] Render complete for', mermaidID, ', inserting SVG')
+        mermaidSrc.insertAdjacentHTML('afterend', result.svg)
+        item.__mermaidOriginalSvg = result.svg
+      } catch (err) {
+        console.error('[Mermaid] Render error for', mermaidID, ':', err.message)
+      }
+    }
+    console.log('[Mermaid] All diagrams rendered')
+  }
+
+  const loadMermaid = () => {
+    console.log('[Mermaid] loadMermaid() called')
+    
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    console.log('[Mermaid] Found mermaid elements:', $mermaidAll.length)
+    
+    if ($mermaidAll.length === 0) {
+      console.log('[Mermaid] No mermaid elements found, returning')
+      return
+    }
+
+    if (window.mermaid) {
+      console.log('[Mermaid] mermaid.js already loaded, rendering directly')
+      runMermaid($mermaidAll)
+      return
+    }
+
+    console.log('[Mermaid] Loading mermaid.js from CDN...')
+    const script = document.createElement('script')
+    script.src = 'https://unpkg.com/mermaid@11/dist/mermaid.min.js'
+    script.onload = () => {
+      console.log('[Mermaid] Mermaid.js loaded, initializing...')
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        flowchart: {
+          htmlLabels: true,
+          useMaxWidth: true
+        }
+      })
+      console.log('[Mermaid] Initialized, starting render...')
+      runMermaid($mermaidAll)
+    }
+    script.onerror = (e) => {
+      console.error('[Mermaid] Failed to load mermaid.js from CDN', e)
+    }
+    document.head.appendChild(script)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  
+  console.log('[Mermaid] window.pjax =', typeof window.pjax !== 'undefined' ? 'defined' : 'undefined')
+  
+  if (window.pjax) {
+    console.log('[Mermaid] pjax detected, calling loadMermaid()')
+    loadMermaid()
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadMermaid)
+  } else {
+    console.log('[Mermaid] Document already loaded, calling directly')
+    loadMermaid()
+  }
+  
+  window.addEventListener('load', () => {
+    console.log('[Mermaid] Window load event fired')
+    const $mermaidAll = document.querySelectorAll('.mermaid-wrap')
+    if ($mermaidAll.length > 0 && !window.mermaid) {
+      console.log('[Mermaid] loadMermaid not called yet, calling now')
+      loadMermaid()
+    }
+  })
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
